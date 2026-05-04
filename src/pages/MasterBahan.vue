@@ -5,7 +5,7 @@ const listBahan = ref([])
 const isEdit = ref(false)
 
 // Form Master Bahan (Hanya Nama & Satuan)
-const formBahan = ref({ ID: null, nama_bahan: '', satuan: 'gr' })
+const formBahan = ref({ ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0 })
 
 // Form Pembelian (Restok)
 const showModalBeli = ref(false)
@@ -47,7 +47,7 @@ const simpanBahan = async () => {
 
 const editBahan = (b) => {
   isEdit.value = true
-  formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan }
+  formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan, batas_minimum: b.batas_minimum }
 }
 
 const hapusBahan = async (id) => {
@@ -119,6 +119,10 @@ onMounted(fetchBahan)
             <option value="pcs">Pieces (pcs)</option>
           </select>
         </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Batas Minimum Alert</label>
+          <input v-model.number="formBahan.batas_minimum" type="number" required min="0" step="any" class="w-full border-2 border-red-200 bg-red-50 rounded p-2 focus:border-red-500 font-bold outline-none text-red-700">
+        </div>
         <div class="flex gap-2">
             <button v-if="isEdit" type="button" @click="isEdit = false; formBahan = {ID:null, nama_bahan:'', satuan:'gr'}" class="px-4 py-2 font-bold text-gray-500">Batal</button>
             <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded font-bold shadow hover:bg-black transition">
@@ -143,7 +147,11 @@ onMounted(fetchBahan)
           <tr v-for="b in listBahan" :key="b.ID" class="hover:bg-blue-50 transition">
             <td class="p-4 font-bold text-gray-900">{{ b.nama_bahan }}</td>
             <td class="p-4 text-center">
-              <span class="font-black text-lg text-blue-700">{{ b.stok }}</span> <span class="text-xs text-gray-500 font-bold">{{ b.satuan }}</span>
+              <div :class="{'bg-red-100 text-red-800 border border-red-400 p-1 rounded animate-pulse': b.stok <= b.batas_minimum}">
+                <span class="font-black text-lg" :class="b.stok <= b.batas_minimum ? 'text-red-700' : 'text-blue-700'">{{ b.stok }}</span> 
+                <span class="text-xs font-bold ml-1">{{ b.satuan }}</span>
+              </div>
+              <p v-if="b.stok <= b.batas_minimum" class="text-[9px] text-red-600 font-bold mt-1">⚠️ STOK KRITIS!</p>
             </td>
             <td class="p-4 text-right font-bold text-gray-700">
               Rp {{ formatRp(b.harga_saat_ini) }} <span class="text-xs text-gray-400">/ {{ b.satuan }}</span>

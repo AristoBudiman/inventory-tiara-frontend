@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue'
 const listBarang = ref([])
 const listResep = ref([])
 const isEdit = ref(false)
+const listBahan = ref([])
 
 const form = ref({
   ID: null,
@@ -11,21 +12,29 @@ const form = ref({
   HargaDefault: 0,
   resep_id: '',
   metode_konversi: 'Gram',
-  kebutuhan_adonan: 0
+  kebutuhan_adonan: 0,
+  masa_simpan: 2, // Default 2 Hari
+  kemasan_detail: [],
 })
+
+const tambahKemasan = () => form.value.kemasan_detail.push({ bahan_id: '', kebutuhan: 1 })
+const hapusKemasan = (idx) => form.value.kemasan_detail.splice(idx, 1)
 
 const fetchMasterData = async () => {
   try {
     const token = localStorage.getItem('inventory_token')
     const headers = { 'Authorization': `Bearer ${token}` }
 
-    const [resBarang, resResep] = await Promise.all([
+    // BARU: Tambahkan panggilan API ke /api/bahan
+    const [resBarang, resResep, resBahan] = await Promise.all([
       fetch(`${import.meta.env.VITE_API_URL}/api/barangs`, { headers }),
-      fetch(`${import.meta.env.VITE_API_URL}/api/resep`, { headers })
+      fetch(`${import.meta.env.VITE_API_URL}/api/resep`, { headers }),
+      fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers }) 
     ])
     
     if (resBarang.ok) listBarang.value = await resBarang.json()
     if (resResep.ok) listResep.value = await resResep.json()
+    if (resBahan.ok) listBahan.value = await resBahan.json() 
   } catch (err) {
     console.error("Gagal load data:", err)
   }
@@ -42,7 +51,9 @@ const handleSubmit = async () => {
     HargaDefault: Number(form.value.HargaDefault),
     resep_id: form.value.resep_id ? Number(form.value.resep_id) : null,
     metode_konversi: form.value.metode_konversi,
-    kebutuhan_adonan: Number(form.value.kebutuhan_adonan)
+    kebutuhan_adonan: Number(form.value.kebutuhan_adonan),
+    masa_simpan: Number(form.value.masa_simpan),
+    kemasan_detail: form.value.kemasan_detail
   }
 
   const token = localStorage.getItem('inventory_token')
@@ -70,7 +81,9 @@ const editBarang = (b) => {
     HargaDefault: b.HargaDefault,
     resep_id: b.resep_id || '',
     metode_konversi: b.metode_konversi || 'Gram',
-    kebutuhan_adonan: b.kebutuhan_adonan || 0
+    kebutuhan_adonan: b.kebutuhan_adonan || 0,
+    masa_simpan: b.masa_simpan || 2,
+    kemasan_detail: b.kemasan_detail || []
   }
 }
 
@@ -86,7 +99,7 @@ const hapusBarang = async (id) => {
 
 const resetForm = () => {
   isEdit.value = false
-  form.value = { ID: null, NamaBarang: '', HargaDefault: 0, resep_id: '', metode_konversi: 'Gram', kebutuhan_adonan: 0 }
+  form.value = { ID: null, NamaBarang: '', HargaDefault: 0, resep_id: '', metode_konversi: 'Gram', kebutuhan_adonan: 0, masa_simpan: 2 }
 }
 
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
@@ -131,7 +144,7 @@ onMounted(fetchMasterData)
 
         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
           <label class="block text-xs font-black text-blue-900 mb-2 uppercase">Koneksi Modul Dapur (Resep)</label>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label class="block text-xs font-bold text-gray-600 mb-1">Dibuat dari Resep Apa?</label>
               <select v-model="form.resep_id" class="w-full border-2 rounded p-2 focus:border-blue-500 font-bold outline-none bg-white">
@@ -152,10 +165,36 @@ onMounted(fetchMasterData)
                 <label class="block text-xs font-bold text-gray-600 mb-1">Kebutuhan Adonan / Pcs</label>
                 <input v-model.number="form.kebutuhan_adonan" type="number" step="any" min="0" required class="w-full border-2 rounded p-2 focus:border-blue-500 font-black outline-none" :placeholder="form.metode_konversi === 'Gram' ? 'Misal: 60 (gr)' : 'Misal: 0.25 (Pcs)'">
               </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">Expired Date (Masa Simpan)</label>
+                <div class="relative">
+                   <input v-model.number="form.masa_simpan" type="number" min="1" required class="w-full border-2 border-red-300 bg-red-50 rounded p-2 focus:border-red-500 font-black text-red-900 outline-none pr-12">
+                   <span class="absolute right-3 top-2 text-xs font-bold text-red-500">Hari</span>
+                </div>
+              </div>
             </template>
           </div>
           <p v-if="form.resep_id" class="text-[10px] text-gray-500 mt-2 font-bold italic">
             *Artinya: 1 buah "{{ form.NamaBarang || 'Produk Ini' }}" membutuhkan {{ form.kebutuhan_adonan || 0 }} {{ form.metode_konversi }} dari resep terpilih.
+          </p>
+        </div>
+        <!-- UI BARU KEMASAN -->
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 mt-4">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-xs font-black text-purple-900 uppercase">Koneksi Kemasan (Dus/Plastik/Tataan)</label>
+            <button type="button" @click="tambahKemasan" class="text-[10px] font-bold bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded shadow transition">+ Tambah Kemasan</button>
+          </div>
+          
+          <div v-for="(k, idx) in form.kemasan_detail" :key="idx" class="flex gap-2 items-center mb-2">
+            <select v-model="k.bahan_id" required class="flex-1 border-2 border-white rounded p-1.5 focus:border-purple-500 font-bold text-sm outline-none shadow-sm">
+              <option value="" disabled>Pilih Kemasan...</option>
+              <option v-for="mb in listBahan" :key="mb.ID" :value="mb.ID">{{ mb.nama_bahan }} ({{ mb.satuan }})</option>
+            </select>
+            <input v-model.number="k.kebutuhan" type="number" step="any" min="0.01" class="w-20 border-2 border-white rounded p-1.5 text-center font-black text-sm outline-none focus:border-purple-500 shadow-sm" placeholder="Qty">
+            <button type="button" @click="hapusKemasan(idx)" class="text-red-500 font-black text-2xl hover:text-red-700 px-1 leading-none">×</button>
+          </div>
+          <p class="text-[10px] text-gray-500 font-bold italic mt-1">
+            *Berapa banyak kemasan (lembar/pcs) yang dipotong otomatis saat roti ini dimasukkan ke Laporan Matang.
           </p>
         </div>
 
@@ -200,6 +239,8 @@ onMounted(fetchMasterData)
                     <div v-if="b.resep_id" class="bg-blue-100 border border-blue-200 px-2 py-1 rounded inline-block">
                       <p class="text-xs font-bold text-blue-900">🥣 {{ b.resep?.nama_resep || 'Resep Terhapus' }}</p>
                       <p class="text-[10px] text-blue-700 font-medium">Beban: {{ b.kebutuhan_adonan }} {{ b.metode_konversi }}</p>
+                      <!-- TAMPILAN MASA SIMPAN -->
+                      <p class="text-[10px] text-red-600 font-black mt-1">⏳ Expired: {{ b.masa_simpan }} Hari</p>
                     </div>
                     <span v-else class="text-xs text-gray-400 italic font-bold">Barang Titipan (No Resep)</span>
                   </td>

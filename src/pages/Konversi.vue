@@ -8,32 +8,40 @@ const listProduk = ref([])
 const sisaKemarinMap = ref({})
 const hasilRekapResep = ref([]) // Wadah untuk instruksi akhir koki
 const isDihitung = ref(false)
+const listResep = ref([]) 
+const listBahan = ref([]) 
+const peringatanStok = ref([])
 
 const fetchAwal = async () => {
-  const token = localStorage.getItem('inventory_token') // Pastikan sudah diganti ke inventory_token
+  const token = localStorage.getItem('inventory_token')
   const headers = { 'Authorization': `Bearer ${token}` }
   
-  const [resB, resS] = await Promise.all([
+  // BARU: Tambahkan resResep dan resBahan
+  const [resB, resS, resResep, resBahan] = await Promise.all([
     fetch(`${import.meta.env.VITE_API_URL}/api/barangs`, { headers }),
-    fetch(`${import.meta.env.VITE_API_URL}/api/konversi/sisa-kemarin?tanggal=${tanggal.value}`, { headers })
+    fetch(`${import.meta.env.VITE_API_URL}/api/konversi/sisa-kemarin?tanggal=${tanggal.value}`, { headers }),
+    fetch(`${import.meta.env.VITE_API_URL}/api/resep`, { headers }), // <--- AMBIL RESEP
+    fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers })  // <--- AMBIL BAHAN
   ])
+
+  if(resResep.ok) listResep.value = await resResep.json()
+  if(resBahan.ok) listBahan.value = await resBahan.json()
 
   if(resB.ok) {
     const semuaBarang = await resB.json()
-    // Saring HANYA barang yang terikat dengan resep dapur
     listProduk.value = semuaBarang
       .filter(b => b.resep_id !== null)
       .map(b => ({
         ...b,
-        input_target: 0, // State reaktif untuk form input
-        target_bersih: 0 // Hasil setelah dikurangi sisa
+        input_target: 0,
+        target_bersih: 0
       }))
   }
 
   if(resS.ok) {
     const sisaData = await resS.json()
     sisaKemarinMap.value = sisaData.reduce((map, item) => {
-      map[item.barang_id] = item.qty_sisa
+      map[item.barang_id] = (map[item.barang_id] || 0) + item.qty_sisa
       return map
     }, {})
   }
@@ -74,16 +82,48 @@ const hitungSemuaKonversi = () => {
 
   // Ubah objek rekap menjadi array agar mudah di-looping di UI
   hasilRekapResep.value = Object.values(rekapMangkuk).map(resep => {
+    // 1. Hitung kebutuhan batch murni (bisa desimal panjang seperti 1.132)
+    const rawBatch = resep.total_kebutuhan_adonan / resep.target_gram_per_resep
+    
+    // 2. RUMUS AJAIB: Bulatkan ke atas ke kelipatan 0.25 terdekat
+    // Contoh: 1.1 jadi 1.25 | 1.6 jadi 1.75 | 2.0 tetap 2
+    const finalBatch = Math.ceil(rawBatch * 4) / 4
+
     return {
       nama_resep: resep.nama_resep,
       detail_roti: resep.daftar_roti.join(', '),
       total_adonan_gram: resep.total_kebutuhan_adonan,
-      // Hitung Batch: Total Butuh / Target Gram per Resep
-      rekomendasi_batch: (resep.total_kebutuhan_adonan / resep.target_gram_per_resep).toFixed(2)
+      rekomendasi_batch: finalBatch // Angka cantik untuk Koki!
     }
   })
 
   isDihitung.value = true
+
+  // Cek Ketersediaan Stok Bahan
+  const bahanDibutuhkan = {}
+  peringatanStok.value = []
+
+  // Kalkulasi total butuh per bahan
+  hasilRekapResep.value.forEach(r => {
+    const resepAsli = listResep.value.find(x => x.nama_resep === r.nama_resep)
+    const batch = parseFloat(r.rekomendasi_batch)
+    
+    resepAsli.bahan_detail.forEach(bd => {
+        if(!bahanDibutuhkan[bd.bahan_id]) bahanDibutuhkan[bd.bahan_id] = 0
+        bahanDibutuhkan[bd.bahan_id] += (bd.kebutuhan * batch)
+    })
+  })
+
+  // Cek melawan stok asli di master bahan
+  peringatanStok.value = []
+  Object.keys(bahanDibutuhkan).forEach(id => {
+    const bahanAsli = listBahan.value.find(b => b.ID == id)
+    if (bahanAsli && bahanDibutuhkan[id] > bahanAsli.stok) {
+        peringatanStok.value.push(
+          `⚠️ ${bahanAsli.nama_bahan} Kurang! (Butuh: ${bahanDibutuhkan[id].toFixed(1)} ${bahanAsli.satuan}, Sisa: ${bahanAsli.stok} ${bahanAsli.satuan})`
+        )
+    }
+  })
 }
 
 onMounted(fetchAwal)
@@ -135,7 +175,15 @@ onMounted(fetchAwal)
           </table>
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex flex-col items-end gap-4">
+           <!-- ALERT STOK KURANG -->
+           <div v-if="peringatanStok.length > 0" class="w-full bg-red-100 border-l-4 border-red-600 p-4 rounded-r-lg shadow-sm">
+             <h4 class="text-red-800 font-black text-sm mb-2 flex items-center gap-2">⚠️ PERINGATAN! BAHAN MENTAH TIDAK MENCUKUPI:</h4>
+             <ul class="list-disc list-inside text-xs font-bold text-red-700 space-y-1 ml-2">
+                <li v-for="(alert, idx) in peringatanStok" :key="idx">{{ alert }}</li>
+             </ul>
+           </div>
+
            <button type="submit" class="bg-yellow-500 text-yellow-950 px-10 py-4 rounded-xl font-black shadow-lg hover:bg-yellow-400 transition text-lg flex items-center gap-2">
              🧮 KALKULASI REKAP DAPUR
            </button>
