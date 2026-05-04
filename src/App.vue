@@ -83,8 +83,8 @@ const logout = () => {
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1">Operasional Dapur</span>
               <div class="flex gap-2">
                 <router-link to="/konversi" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌤️ Konversi</router-link>
-                <router-link to="/input-produksi" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">👨‍🍳 Dapur</router-link>
-                <router-link to="/tutup-buku" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700" exact-active-class="!bg-emerald-50 !text-emerald-700 !border-emerald-300 shadow-sm">🌙 Tutup Buku</router-link>
+                <router-link to="/input-produksi" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">👨‍🍳 Dapur</router-link>
+                <router-link to="/tutup-buku" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌙 Tutup Buku</router-link>
               </div>
             </div>
 
@@ -92,8 +92,8 @@ const logout = () => {
             <div class="flex flex-col gap-1.5 pr-4 shrink-0">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1">Gudang & Laporan</span>
               <div class="flex gap-2">
-                <router-link to="/opname" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-purple-50 hover:text-purple-700" exact-active-class="!bg-purple-50 !text-purple-700 !border-purple-300 shadow-sm">⚖️ Opname</router-link>
-                <router-link to="/laporan-pengeluaran" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">💸 Keuangan</router-link>
+                <router-link to="/opname" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">⚖️ Opname</router-link>
+                <router-link to="/laporan-pengeluaran" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">💸 Pengeluaran</router-link>
                 <router-link to="/sampah-inventory" class="px-4 py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">🗑️ Sampah</router-link>
               </div>
             </div>

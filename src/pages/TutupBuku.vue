@@ -21,95 +21,114 @@ const fetchJurnal = async () => {
 }
 
 const eksekusiTutupBuku = async () => {
-  if(!confirm(`Lakukan Tutup Buku untuk tanggal ${filterTanggal.value}? Sistem akan membandingkan data masak, matang, dan kiriman.`)) return
-
+  if(!confirm(`Eksekusi Tutup Buku untuk tanggal ${filterTanggal.value}? Pastikan semua transaksi hari ini selesai.`)) return
   isCalculating.value = true
   const token = localStorage.getItem('inventory_token')
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/tutup-buku`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify({ tanggal: filterTanggal.value })
-  })
-
-  if (res.ok) {
-    alert("Kalkulasi Selesai! Data Efisiensi & Sisa Layak Jual telah diperbarui.")
-    fetchJurnal()
-  } else {
-    alert("Gagal melakukan kalkulasi.")
-  }
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/tutup-buku`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tanggal: filterTanggal.value }) })
+  if (res.ok) { alert("Tutup Buku Berhasil!"); fetchJurnal() } else { alert("Gagal kalkulasi.") }
   isCalculating.value = false
 }
-
 onMounted(fetchJurnal)
 </script>
 
 <template>
-  <div class="p-8 max-w-7xl mx-auto">
-    <div class="flex justify-between items-center mb-8 bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-        <h1 class="text-2xl font-black text-gray-900">🌙 Tutup Buku & Laporan Efisiensi</h1>
+  <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
+    
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200 gap-4">
+        <div>
+          <h1 class="text-3xl font-black text-gray-800 tracking-tight">🌙 Laporan Tutup Buku</h1>
+          <p class="text-sm text-gray-500 font-medium mt-1">Audit efisiensi kinerja koki dan inventarisasi sisa layak jual harian.</p>
+        </div>
         <div class="flex items-center gap-3">
-            <input type="date" v-model="filterTanggal" @change="fetchJurnal" class="border-2 rounded-lg p-2 font-bold focus:outline-none focus:border-green-500">
-            <button @click="eksekusiTutupBuku" :disabled="isCalculating" class="bg-green-600 text-white px-6 py-2.5 rounded-lg font-bold shadow hover:bg-green-700 disabled:opacity-50">
-              {{ isCalculating ? 'Sedang Menghitung...' : '⚙️ EKSEKUSI TUTUP BUKU' }}
+            <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 flex items-center">
+               <input type="date" v-model="filterTanggal" @change="fetchJurnal" class="border-none bg-transparent font-bold focus:ring-0 text-gray-800 outline-none cursor-pointer">
+            </div>
+            <button @click="eksekusiTutupBuku" :disabled="isCalculating" class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
+              {{ isCalculating ? 'Menghitung...' : '⚙️ EKSEKUSI' }}
             </button>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
-      <!-- LAPORAN WASTE -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-red-800 p-4 text-white">
-          <h2 class="font-black text-lg">📉 Jurnal Efisiensi Resep (Waste)</h2>
-          <p class="text-xs text-red-200">Perbandingan Prediksi Modal Adonan vs Hasil Nyata</p>
+      <!-- KIRI: LAPORAN WASTE (MERAH) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-rose-100 flex flex-col overflow-hidden">
+        <div class="bg-rose-600 p-5 text-white flex justify-between items-center">
+          <div>
+            <h2 class="font-black text-lg tracking-wide">📉 Jurnal Efisiensi Koki</h2>
+            <p class="text-[10px] font-bold text-rose-200 uppercase tracking-wider mt-0.5">Prediksi Modal vs Hasil Fisik Roti</p>
+          </div>
+          <span class="text-3xl opacity-50">⚖️</span>
         </div>
-        <table class="w-full text-sm text-left">
-          <thead class="bg-red-50 text-red-900 border-b border-red-100">
-            <tr>
-              <th class="p-3">Resep Dapur</th>
-              <th class="p-3 text-center">Prediksi Sistem</th>
-              <th class="p-3 text-center">Hasil Matang</th>
-              <th class="p-3 text-center">Selisih/Waste</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="j in jurnalEfisiensi" :key="j.ID" class="border-b">
-              <td class="p-3 font-bold">{{ j.resep.nama_resep }}</td>
-              <td class="p-3 text-center text-gray-500">{{ j.modal_adonan }} gr</td>
-              <td class="p-3 text-center font-bold">{{ j.hasil_roti }} gr</td>
-              <td class="p-3 text-center font-black" :class="j.selisih_waste > 0 ? 'text-red-600' : 'text-green-600'">
-                {{ j.selisih_waste > 0 ? '-' : '+' }}{{ Math.abs(j.selisih_waste) }} gr <br>
-                <span class="text-[10px] bg-gray-100 px-1 rounded text-black">{{ j.kinerja.toFixed(1) }}%</span>
-              </td>
-            </tr>
-            <tr v-if="jurnalEfisiensi.length === 0"><td colspan="4" class="p-8 text-center text-gray-400 italic">Belum ada kalkulasi di tanggal ini.</td></tr>
-          </tbody>
-        </table>
+        
+        <div class="p-6 bg-gray-50 flex-1">
+          <div class="space-y-4">
+            <div v-for="j in jurnalEfisiensi" :key="j.ID" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col relative overflow-hidden">
+              <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="j.selisih_waste > 0 ? 'bg-rose-500' : 'bg-emerald-500'"></div>
+              
+              <div class="flex justify-between items-start mb-3 pl-3">
+                 <h3 class="font-bold text-gray-800">{{ j.resep.nama_resep }}</h3>
+                 <span class="text-xl font-black" :class="j.selisih_waste > 0 ? 'text-rose-600' : 'text-emerald-600'">
+                    {{ j.selisih_waste > 0 ? '-' : '+' }}{{ Math.abs(j.selisih_waste) }} <span class="text-xs font-bold text-gray-400">gr</span>
+                 </span>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-2 text-center pl-3">
+                 <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Modal Adonan</p>
+                    <p class="text-sm font-bold text-gray-600">{{ j.modal_adonan }}g</p>
+                 </div>
+                 <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Cetak Roti</p>
+                    <p class="text-sm font-bold text-gray-600">{{ j.hasil_roti }}g</p>
+                 </div>
+                 <div class="rounded-lg p-2 border" :class="j.kinerja < 95 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'">
+                    <p class="text-[9px] font-bold uppercase tracking-wider mb-1" :class="j.kinerja < 95 ? 'text-rose-500' : 'text-emerald-600'">Kinerja</p>
+                    <p class="text-sm font-black" :class="j.kinerja < 95 ? 'text-rose-700' : 'text-emerald-700'">{{ j.kinerja.toFixed(1) }}%</p>
+                 </div>
+              </div>
+            </div>
+            
+            <div v-if="jurnalEfisiensi.length === 0" class="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl">
+               <p class="text-sm text-gray-400 font-bold">Belum ada data efisiensi dapur.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- SISA LAYAK JUAL -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-blue-800 p-4 text-white">
-          <h2 class="font-black text-lg">📦 Sisa Layak Jual (Carry-Over)</h2>
-          <p class="text-xs text-blue-200">Sisa roti matang yang belum terbawa oleh Nota hari ini</p>
+      <!-- KANAN: SISA LAYAK JUAL (BIRU) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-blue-100 flex flex-col overflow-hidden">
+        <div class="bg-blue-600 p-5 text-white flex justify-between items-center">
+          <div>
+            <h2 class="font-black text-lg tracking-wide">📦 Sisa Kelayakan Jual</h2>
+            <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider mt-0.5">Sisa Fisik Yang Digeser Ke Besok (Carry-Over)</p>
+          </div>
+          <span class="text-3xl opacity-50">🚚</span>
         </div>
-        <table class="w-full text-sm text-left">
-          <thead class="bg-blue-50 text-blue-900 border-b border-blue-100">
-            <tr>
-              <th class="p-3">Nama Produk Jual</th>
-              <th class="p-3 text-center font-black text-lg">Qty Sisa Pabrik</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="s in sisaLayakJual" :key="s.ID" class="border-b">
-              <td class="p-3 font-bold">{{ s.barang.NamaBarang }}</td>
-              <td class="p-3 text-center font-black text-blue-700 bg-blue-50 text-xl">{{ s.qty_sisa }} Pcs</td>
-            </tr>
-            <tr v-if="sisaLayakJual.length === 0"><td colspan="2" class="p-8 text-center text-gray-400 italic">Belum ada kalkulasi sisa di tanggal ini.</td></tr>
-          </tbody>
-        </table>
+        
+        <div class="p-6 bg-gray-50 flex-1">
+          <div class="grid grid-cols-2 gap-4">
+             <div v-for="s in sisaLayakJual" :key="s.ID" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                <p class="font-bold text-gray-700 text-sm mb-3 leading-tight">{{ s.barang.NamaBarang }}</p>
+                <div class="flex items-end justify-between">
+                   <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sisa Fisik</span>
+                   <p class="text-2xl font-black text-blue-700 leading-none">{{ s.qty_sisa }} <span class="text-xs font-bold text-blue-400">Pcs</span></p>
+                </div>
+             </div>
+          </div>
+
+          <div v-if="sisaLayakJual.length === 0" class="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl mt-4">
+             <p class="text-sm text-gray-400 font-bold">Tidak ada sisa produk layak jual.</p>
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
 </template>
+
+<style scoped>
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
