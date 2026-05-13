@@ -119,8 +119,8 @@ onMounted(fetchBahan)
             <input v-model.number="formBahan.batas_minimum" type="number" required min="0" step="any" class="w-full border-2 border-red-300 bg-white rounded-lg p-2.5 focus:border-red-500 font-black text-red-600 text-center outline-none transition-colors">
           </div>
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" :class="isEdit ? 'text-gray-400' : 'text-green-600'">HPP Awal / Manual</label>
-            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" :disabled="isEdit" class="w-full border-2 rounded-lg p-2.5 font-black outline-none" :class="isEdit ? 'bg-gray-100 border-gray-200 text-gray-400' : 'border-green-300 focus:border-green-500 text-green-700 bg-white'" :title="isEdit ? 'HPP hanya bisa diubah melalui Restok' : 'Harga Modal saat ini'">
+            <label class="block text-[10px] font-bold uppercase tracking-wider mb-2 text-green-600">HPP / Harga Modal</label>
+            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" class="w-full border-2 rounded-lg p-2.5 font-black outline-none border-green-300 focus:border-green-500 text-green-700 bg-white"title="Harga Modal saat ini">
           </div>
           <div class="md:col-span-2 flex gap-2">
             <button v-if="isEdit" type="button" @click="isEdit = false; formBahan = {ID:null, nama_bahan:'', satuan:'gr', batas_minimum:0}" class="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 transition-colors">Batal</button>
