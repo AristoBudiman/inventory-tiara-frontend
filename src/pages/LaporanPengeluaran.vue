@@ -29,6 +29,29 @@ const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
 const formatTanggal = (tgl) => new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 const grandTotal = computed(() => listBelanja.value.reduce((sum, item) => sum + item.total_biaya, 0))
 
+const toggleStatusBayar = async (b) => {
+  const isCurrentlyLunas = b.is_lunas;
+  const actionText = isCurrentlyLunas 
+    ? 'Membatalkan lunas (mengubah jadi HUTANG)? Uang akan ditarik kembali ke Kas.' 
+    : 'Melunasi hutang ini? Kas akan otomatis terpotong.';
+    
+  if(confirm(`Yakin ingin ${actionText}`)) {
+    const token = localStorage.getItem('inventory_token')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${b.ID}/status`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ is_lunas: !isCurrentlyLunas }) // Kirim status kebalikannya
+    })
+    
+    if(res.ok) {
+      fetchBelanja() // Refresh data
+    }
+  }
+}
+
 onMounted(fetchBelanja)
 </script>
 
@@ -67,6 +90,7 @@ onMounted(fetchBelanja)
             <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-x border-gray-200 w-32">Qty Masuk</th>
             <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40">Harga Beli/Satuan</th>
             <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48">Total Biaya (Rp)</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-36">Status Bayar</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -83,15 +107,34 @@ onMounted(fetchBelanja)
             <td class="p-4 text-right font-black text-red-700 border-l border-gray-100 bg-red-50/30 text-base">
                Rp {{ formatRp(b.total_biaya) }}
             </td>
+            <td class="p-4 text-center border-l border-gray-100">
+              <div v-if="b.is_lunas" class="flex flex-col gap-2">
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-green-200">
+                  LUNAS
+                </span>
+                <button @click="toggleStatusBayar(b)" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-[9px] font-bold px-2 py-1.5 rounded shadow-sm transition-all active:scale-95">
+                  Batal Lunas ↩
+                </button>
+              </div>
+              
+              <div v-else class="flex flex-col gap-2">
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-red-200">
+                  HUTANG
+                </span>
+                <button @click="toggleStatusBayar(b)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-2 py-1.5 rounded shadow transition-all active:scale-95">
+                  Tandai Lunas ✔
+                </button>
+              </div>
+            </td>
           </tr>
           <tr v-if="listBelanja.length === 0">
-            <td colspan="5" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
+            <td colspan="6" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
           </tr>
         </tbody>
         <!-- GRAND TOTAL -->
         <tfoot class="bg-gray-800 text-white border-t-4 border-red-500">
             <tr>
-                <td colspan="4" class="p-4 text-right font-black uppercase tracking-widest text-xs">Grand Total Pengeluaran:</td>
+                <td colspan="5" class="p-4 text-right font-black uppercase tracking-widest text-xs">Grand Total Pengeluaran:</td>
                 <td class="p-4 text-right font-black text-xl text-red-400">Rp {{ formatRp(grandTotal) }}</td>
             </tr>
         </tfoot>

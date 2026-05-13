@@ -4,11 +4,30 @@ import { ref, onMounted } from 'vue'
 const listBahan = ref([])
 const isEdit = ref(false)
 
-const formBahan = ref({ ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0 })
+const formBahan = ref({ ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 })
 const showModalBeli = ref(false)
 
 // UBAH: formBeli sekarang menangkap 'total_biaya' alih-alih 'harga_beli_satuan'
-const formBeli = ref({ tanggal: new Date().toISOString().split('T')[0], bahan_id: null, nama_bahan_tampil: '', qty: 0, total_biaya: 0, keterangan: '' })
+const formBeli = ref({ tanggal: new Date().toISOString().split('T')[0], bahan_id: null, nama_bahan_tampil: '', qty: 0, total_biaya: 0, keterangan: '', is_lunas: true })
+
+const dragIndex = ref(null)
+
+const dragStart = (index) => { dragIndex.value = index }
+const drop = async (index) => {
+  if (dragIndex.value === null) return
+  const itemToMove = listBahan.value.splice(dragIndex.value, 1)[0]
+  listBahan.value.splice(index, 0, itemToMove)
+  dragIndex.value = null
+
+  // Simpan urutan baru ke database
+  const payload = listBahan.value.map((b, i) => ({ id: b.ID, urutan: i + 1 }))
+  const token = localStorage.getItem('inventory_token')
+  await fetch(`${import.meta.env.VITE_API_URL}/api/bahan/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(payload)
+  })
+}
 
 const fetchBahan = async () => {
   const token = localStorage.getItem('inventory_token')
@@ -21,10 +40,10 @@ const simpanBahan = async () => {
   const url = isEdit.value ? `${import.meta.env.VITE_API_URL}/api/bahan/${formBahan.value.ID}` : `${import.meta.env.VITE_API_URL}/api/bahan`
   const token = localStorage.getItem('inventory_token')
   await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formBahan.value) })
-  isEdit.value = false; formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0 }; fetchBahan()
+  isEdit.value = false; formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 }; fetchBahan()
 }
 
-const editBahan = (b) => { isEdit.value = true; formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan, batas_minimum: b.batas_minimum } }
+const editBahan = (b) => { isEdit.value = true; formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan, batas_minimum: b.batas_minimum, harga_saat_ini: b.harga_saat_ini } }
 const hapusBahan = async (id) => {
   if(confirm('Hapus bahan ini ke tempat sampah?')) {
     const token = localStorage.getItem('inventory_token')
@@ -34,7 +53,7 @@ const hapusBahan = async (id) => {
 }
 
 // UBAH: Saat buka modal, reset 'total_biaya' ke 0
-const bukaModalBeli = (b) => { formBeli.value = { tanggal: new Date().toISOString().split('T')[0], bahan_id: b.ID, nama_bahan_tampil: b.nama_bahan, qty: 0, total_biaya: 0, keterangan: '' }; showModalBeli.value = true }
+const bukaModalBeli = (b) => { formBeli.value = { tanggal: new Date().toISOString().split('T')[0], bahan_id: b.ID, nama_bahan_tampil: b.nama_bahan, qty: 0, total_biaya: 0, keterangan: '', is_lunas: true }; showModalBeli.value = true }
 
 const simpanPembelian = async () => {
   if(formBeli.value.qty <= 0) return alert('Qty belanja tidak boleh 0!')
@@ -49,7 +68,8 @@ const simpanPembelian = async () => {
     bahan_id: formBeli.value.bahan_id,
     qty: formBeli.value.qty,
     harga_beli_satuan: harga_satuan_otomatis, // Ini yang diterima oleh Golang
-    keterangan: formBeli.value.keterangan
+    keterangan: formBeli.value.keterangan,
+    is_lunas: formBeli.value.is_lunas
   }
 
   const token = localStorage.getItem('inventory_token')
@@ -98,6 +118,10 @@ onMounted(fetchBahan)
             <label class="block text-xs font-bold text-red-600 uppercase tracking-wider mb-2">Batas Minimum</label>
             <input v-model.number="formBahan.batas_minimum" type="number" required min="0" step="any" class="w-full border-2 border-red-300 bg-white rounded-lg p-2.5 focus:border-red-500 font-black text-red-600 text-center outline-none transition-colors">
           </div>
+          <div class="md:col-span-2">
+            <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" :class="isEdit ? 'text-gray-400' : 'text-green-600'">HPP Awal / Manual</label>
+            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" :disabled="isEdit" class="w-full border-2 rounded-lg p-2.5 font-black outline-none" :class="isEdit ? 'bg-gray-100 border-gray-200 text-gray-400' : 'border-green-300 focus:border-green-500 text-green-700 bg-white'" :title="isEdit ? 'HPP hanya bisa diubah melalui Restok' : 'Harga Modal saat ini'">
+          </div>
           <div class="md:col-span-2 flex gap-2">
             <button v-if="isEdit" type="button" @click="isEdit = false; formBahan = {ID:null, nama_bahan:'', satuan:'gr', batas_minimum:0}" class="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 transition-colors">Batal</button>
             <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md transition-colors">
@@ -120,8 +144,18 @@ onMounted(fetchBahan)
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="b in listBahan" :key="b.ID" class="hover:bg-blue-50/50 transition-colors">
-            <td class="p-4 font-bold text-gray-800 text-base">{{ b.nama_bahan }}</td>
+          <tr v-for="(b, index) in listBahan" :key="b.ID" 
+              draggable="true" 
+              @dragstart="dragStart(index)" 
+              @dragover.prevent 
+              @drop="drop(index)" 
+              class="hover:bg-blue-50/50 transition-colors cursor-move"
+              :class="{'opacity-50 border-2 border-dashed border-blue-500': dragIndex === index}">
+            
+            <td class="p-4 font-bold text-gray-800 text-base">
+              <span class="text-gray-400 cursor-move mr-3 text-lg" title="Tahan dan geser">☰</span>
+              {{ b.nama_bahan }}
+            </td>
             <td class="p-4 text-center">
               <div class="inline-flex items-baseline justify-center px-3 py-1 rounded-lg border-2 shadow-sm" :class="b.stok <= b.batas_minimum ? 'bg-red-50 border-red-400 text-red-700 animate-pulse' : 'bg-white border-blue-200 text-blue-800'">
                 <span class="font-black text-xl mr-1">{{ b.stok }}</span> 
@@ -180,6 +214,19 @@ onMounted(fetchBahan)
           <div>
             <label class="block text-xs font-bold text-gray-600 mb-1">Keterangan (Opsional)</label>
             <input type="text" v-model="formBeli.keterangan" class="w-full border-2 border-gray-300 rounded p-2 focus:border-green-500 font-medium outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-2">Status Pembayaran</label>
+            <div class="flex gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" v-model="formBeli.is_lunas" :value="true" class="w-4 h-4 text-green-600">
+                <span class="text-sm font-bold text-gray-800">Lunas (Potong Kas)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" v-model="formBeli.is_lunas" :value="false" class="w-4 h-4 text-red-600">
+                <span class="text-sm font-bold text-gray-800">Hutang (Tempo)</span>
+              </label>
+            </div>
           </div>
           <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <button type="button" @click="showModalBeli = false" class="px-5 py-2 font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 rounded transition-colors">Batal</button>
