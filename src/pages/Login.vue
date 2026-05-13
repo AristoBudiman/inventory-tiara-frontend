@@ -1,6 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+
+onMounted(() => {
+  // Tembak rute root "/" diam-diam untuk membangunkan Golang dari tidur
+  fetch(`${import.meta.env.VITE_API_URL}/`).catch(() => {})
+})
 
 const router = useRouter()
 const username = ref('')
