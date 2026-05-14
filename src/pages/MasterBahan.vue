@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import draggable from 'vuedraggable'
 
 const listBahan = ref([])
 const isEdit = ref(false)
@@ -10,23 +11,21 @@ const showModalBeli = ref(false)
 // UBAH: formBeli sekarang menangkap 'total_biaya' alih-alih 'harga_beli_satuan'
 const formBeli = ref({ tanggal: new Date().toISOString().split('T')[0], bahan_id: null, nama_bahan_tampil: '', qty: 0, total_biaya: 0, keterangan: '', is_lunas: true })
 
-const dragIndex = ref(null)
-
-const dragStart = (index) => { dragIndex.value = index }
-const drop = async (index) => {
-  if (dragIndex.value === null) return
-  const itemToMove = listBahan.value.splice(dragIndex.value, 1)[0]
-  listBahan.value.splice(index, 0, itemToMove)
-  dragIndex.value = null
-
-  // Simpan urutan baru ke database
+const simpanUrutan = async () => {
+  // Susun payload dari urutan array terbaru
   const payload = listBahan.value.map((b, i) => ({ id: b.ID, urutan: i + 1 }))
-  const token = localStorage.getItem('inventory_token')
-  await fetch(`${import.meta.env.VITE_API_URL}/api/bahan/reorder`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify(payload)
-  })
+  
+  try {
+    const token = localStorage.getItem('inventory_token')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bahan/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    })
+    if (!res.ok) throw new Error("Gagal menyimpan urutan")
+  } catch (err) {
+    console.error("Gagal simpan urutan:", err.message)
+  }
 }
 
 const fetchBahan = async () => {
@@ -143,42 +142,49 @@ onMounted(fetchBahan)
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr v-for="(b, index) in listBahan" :key="b.ID" 
-              draggable="true" 
-              @dragstart="dragStart(index)" 
-              @dragover.prevent 
-              @drop="drop(index)" 
-              class="hover:bg-blue-50/50 transition-colors cursor-move"
-              :class="{'opacity-50 border-2 border-dashed border-blue-500': dragIndex === index}">
-            
-            <td class="p-4 font-bold text-gray-800 text-base">
-              <span class="text-gray-400 cursor-move mr-3 text-lg" title="Tahan dan geser">☰</span>
-              {{ b.nama_bahan }}
-            </td>
-            <td class="p-4 text-center">
-              <div class="inline-flex items-baseline justify-center px-3 py-1 rounded-lg border-2 shadow-sm" :class="b.stok <= b.batas_minimum ? 'bg-red-50 border-red-400 text-red-700 animate-pulse' : 'bg-white border-blue-200 text-blue-800'">
-                <span class="font-black text-xl mr-1">{{ b.stok }}</span> 
-                <span class="text-xs font-bold uppercase">{{ b.satuan }}</span>
-              </div>
-              <p v-if="b.stok <= b.batas_minimum" class="text-[10px] text-red-600 font-black mt-1 uppercase tracking-widest">⚠️ Stok Kritis</p>
-            </td>
-            <td class="p-4 text-right">
-              <span class="font-bold text-gray-800 text-base">Rp {{ formatRp(b.harga_saat_ini) }}</span>
-              <span class="text-[10px] text-gray-500 font-medium ml-1">/ {{ b.satuan }}</span>
-            </td>
-            <td class="p-4">
-              <!-- Tombol Solid agar awam mudah lihat -->
-              <div class="flex justify-center gap-2">
-                <button @click="bukaModalBeli(b)" class="bg-green-500 hover:bg-green-600 text-white shadow-sm px-3 py-1.5 rounded font-bold text-xs flex items-center gap-1 transition-colors">
-                  🛒 Restok
-                </button>
-                <button @click="editBahan(b)" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Edit</button>
-                <button @click="hapusBahan(b.ID)" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Del</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
+        <draggable 
+            v-model="listBahan" 
+            tag="tbody" 
+            item-key="ID" 
+            handle=".drag-handle" 
+            @end="simpanUrutan"
+            class="divide-y divide-gray-100"
+            animation="200"
+        >
+          <template #item="{ element, index }">
+            <tr class="hover:bg-blue-50/50 transition-colors bg-white">
+              
+              <td class="p-4 font-bold text-gray-800 text-base">
+                <span class="text-gray-400 mr-3 text-lg drag-handle cursor-grab active:cursor-grabbing" title="Tahan dan geser">☰</span>
+                {{ element.nama_bahan }}
+              </td>
+
+              <td class="p-4 text-center">
+                <div class="inline-flex items-baseline justify-center px-3 py-1 rounded-lg border-2 shadow-sm" :class="element.stok <= element.batas_minimum ? 'bg-red-50 border-red-400 text-red-700 animate-pulse' : 'bg-white border-blue-200 text-blue-800'">
+                  <span class="font-black text-xl mr-1">{{ element.stok }}</span> 
+                  <span class="text-xs font-bold uppercase">{{ element.satuan }}</span>
+                </div>
+                <p v-if="element.stok <= element.batas_minimum" class="text-[10px] text-red-600 font-black mt-1 uppercase tracking-widest">⚠️ Stok Kritis</p>
+              </td>
+
+              <td class="p-4 text-right">
+                <span class="font-bold text-gray-800 text-base">Rp {{ formatRp(element.harga_saat_ini) }}</span>
+                <span class="text-[10px] text-gray-500 font-medium ml-1">/ {{ element.satuan }}</span>
+              </td>
+
+              <td class="p-4">
+                <div class="flex justify-center gap-2">
+                  <button @click="bukaModalBeli(element)" class="bg-green-500 hover:bg-green-600 text-white shadow-sm px-3 py-1.5 rounded font-bold text-xs flex items-center gap-1 transition-colors">
+                    🛒 Restok
+                  </button>
+                  <button @click="editBahan(element)" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Edit</button>
+                  <button @click="hapusBahan(element.ID)" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Del</button>
+                </div>
+              </td>
+              
+            </tr>
+          </template>
+        </draggable>
       </table>
     </div>
 

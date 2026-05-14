@@ -107,6 +107,48 @@ const finalisasiRusak = async () => {
   } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
+// --- TAMBAHAN LOGIKA BATAL MASAK ---
+const batalMasak = async (id) => {
+  if (!confirm('Batalkan produksi masak ini? Bahan mentah akan dikembalikan otomatis ke gudang!')) return
+  const token = localStorage.getItem('inventory_token')
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/masak/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if(res.ok) fetchRiwayat() // Langsung refresh data setelah dihapus
+    else alert('Gagal membatalkan.')
+  } catch (err) { alert('Error saat menghubungi server.') }
+}
+
+// --- TAMBAHAN LOGIKA BATAL MATANG ---
+const batalMatang = async (id) => {
+  if (!confirm('Batalkan hasil matang ini? Seluruh akumulasi di baris ini akan dihapus & kemasan dikembalikan. Pastikan Anda menginput ulang angka yang benar!')) return
+  const token = localStorage.getItem('inventory_token')
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/matang/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if(res.ok) fetchRiwayat() // Langsung refresh data setelah dihapus
+    else alert('Gagal membatalkan.')
+  } catch (err) { alert('Error saat menghubungi server.') }
+}
+
+// --- TAMBAHAN LOGIKA BATAL RUSAK/AFKIR ---
+const batalRusak = async (id) => {
+  if (!confirm('Batalkan pencatatan afkir ini? Data akan dihapus dari sistem.')) return
+  const token = localStorage.getItem('inventory_token')
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/rusak/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if(res.ok) fetchRiwayat() // Refresh riwayat setelah dihapus
+    else alert('Gagal membatalkan.')
+  } catch (err) { alert('Error saat menghubungi server.') }
+}
+
 watch(filterTanggal, fetchRiwayat)
 onMounted(() => { fetchMasterData(); fetchRiwayat() })
 </script>
@@ -182,8 +224,13 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
                    <p class="font-bold text-gray-800 text-sm truncate">{{ m.resep?.nama_resep }}</p>
                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Est: {{ m.total_adonan }} gr</p>
                 </div>
-                <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded text-sm font-black border border-orange-200 shrink-0 ml-2">
-                   {{ m.jumlah_batch }}x
+                <div class="flex items-center gap-2 shrink-0 ml-2">
+                  <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded text-sm font-black border border-orange-200">
+                      {{ m.jumlah_batch }}x
+                  </div>
+                  <button @click="batalMasak(m.ID)" title="Batalkan & Refund Bahan" class="bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded p-1.5 transition-colors border border-red-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
                 </div>
              </div>
              <p v-if="riwayatMasak.length === 0" class="text-xs text-gray-400 font-bold italic text-center py-4">Belum ada histori.</p>
@@ -242,8 +289,13 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
            <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
              <div v-for="m in riwayatMatang" :key="m.ID" class="bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex justify-between items-center">
                 <p class="font-bold text-gray-800 text-sm truncate pr-2">{{ m.barang?.NamaBarang }}</p>
-                <div class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded text-sm font-black border border-emerald-200 shrink-0">
-                   {{ m.qty_matang }} <span class="text-[10px] text-emerald-600">Pcs</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <div class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded text-sm font-black border border-emerald-200">
+                      {{ m.qty_matang }} <span class="text-[10px] text-emerald-600">Pcs</span>
+                  </div>
+                  <button @click="batalMatang(m.ID)" title="Batalkan & Refund Kemasan" class="bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded p-1.5 transition-colors border border-red-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
                 </div>
              </div>
              <p v-if="riwayatMatang.length === 0" class="text-xs text-gray-400 font-bold italic text-center py-4">Belum ada histori.</p>
@@ -313,8 +365,13 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
                     <p class="font-bold text-gray-800 text-sm truncate">{{ r.barang?.NamaBarang }}</p>
                     <p class="text-[10px] text-gray-500 italic truncate">{{ r.keterangan }}</p>
                 </div>
-                <div class="bg-red-100 text-red-800 px-3 py-1 rounded text-sm font-black border border-red-200 shrink-0">
-                   {{ r.qty }} <span class="text-[10px] text-red-600">Pcs</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <div class="bg-red-100 text-red-800 px-3 py-1 rounded text-sm font-black border border-red-200">
+                      {{ r.qty }} <span class="text-[10px] text-red-600">Pcs</span>
+                  </div>
+                  <button @click="batalRusak(r.ID)" title="Batalkan Afkir" class="bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded p-1.5 transition-colors border border-red-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
                 </div>
              </div>
              <p v-if="riwayatRusak.length === 0" class="text-xs text-gray-400 font-bold italic text-center py-4">Belum ada histori.</p>
