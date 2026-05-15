@@ -52,6 +52,27 @@ const toggleStatusBayar = async (b) => {
   }
 }
 
+const hapusPembelian = async (id) => {
+  if(confirm('HAPUS PERMANEN NOTA INI?\n\n- Stok bahan ini di gudang akan otomatis DIKURANGI.\n- Uang Kas akan DIKEMBALIKAN (Jika statusnya lunas).')) {
+    const token = localStorage.getItem('inventory_token')
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if(res.ok) {
+        alert('Nota pembelian berhasil dihapus & stok disesuaikan!')
+        fetchBelanja() // Refresh data otomatis
+      } else {
+        alert('Gagal menghapus data pembelian.')
+      }
+    } catch (err) {
+      alert('Error server.')
+    }
+  }
+}
+
 onMounted(fetchBelanja)
 </script>
 
@@ -91,6 +112,7 @@ onMounted(fetchBelanja)
             <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40">Harga Beli/Satuan</th>
             <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48">Total Biaya (Rp)</th>
             <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-36">Status Bayar</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-24">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -126,16 +148,22 @@ onMounted(fetchBelanja)
                 </button>
               </div>
             </td>
+            <td class="p-4 text-center border-l border-gray-100">
+                <button @click="hapusPembelian(b.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  Hapus
+                </button>
+            </td>
           </tr>
           <tr v-if="listBelanja.length === 0">
-            <td colspan="6" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
+            <td colspan="7" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
           </tr>
         </tbody>
         <!-- GRAND TOTAL -->
         <tfoot class="bg-gray-800 text-white border-t-4 border-red-500">
             <tr>
                 <td colspan="5" class="p-4 text-right font-black uppercase tracking-widest text-xs">Grand Total Pengeluaran:</td>
-                <td class="p-4 text-right font-black text-xl text-red-400">Rp {{ formatRp(grandTotal) }}</td>
+                <td colspan="2" class="p-4 text-right font-black text-xl text-red-400">Rp {{ formatRp(grandTotal) }}</td>
             </tr>
         </tfoot>
       </table>

@@ -1,10 +1,46 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const listBahan = ref([])
 const listOpname = ref([])
 const form = ref({ bahan_id: '', stok_fisik: 0, keterangan: '' })
 const bahanTerpilih = ref(null)
+
+const searchQuery = ref('')
+const isDropdownOpen = ref(false)
+
+// Logika filter otomatis berdasarkan ketikan
+const filteredBahan = computed(() => {
+  if (!searchQuery.value) return listBahan.value
+  return listBahan.value.filter(b => 
+    b.nama_bahan.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
+// Logika saat item di klik dari dropdown
+const selectBahan = (b) => {
+  form.value.bahan_id = b.ID
+  searchQuery.value = b.nama_bahan // Tampilkan nama bahan di kotak input
+  bahanTerpilih.value = b
+  isDropdownOpen.value = false     // Tutup dropdown
+  onBahanChange()                  // Panggil fungsi bawaanmu
+}
+
+// Fungsi pintar untuk mengembalikan nama bahan jika user batal memilih
+const tutupDropdown = () => {
+  setTimeout(() => {
+    isDropdownOpen.value = false
+    
+    // Cek: Apakah sebelumnya sudah ada bahan yang dipilih?
+    if (bahanTerpilih.value) {
+      // Kembalikan tulisannya ke nama bahan yang dipilih tadi
+      searchQuery.value = bahanTerpilih.value.nama_bahan
+    } else {
+      // Jika dari awal belum milih apa-apa, kosongkan saja
+      searchQuery.value = ''
+    }
+  }, 200) // Jeda 200ms agar klik di list tidak kalah cepat dengan blur
+}
 
 const fetchData = async () => {
   const token = localStorage.getItem('inventory_token')
@@ -38,6 +74,7 @@ const simpanOpname = async () => {
     alert("Opname berhasil! Stok bahan telah disesuaikan.")
     form.value = { bahan_id: '', stok_fisik: 0, keterangan: '' }
     bahanTerpilih.value = null
+    searchQuery.value = ''
     fetchData()
   }
 }
@@ -74,12 +111,32 @@ onMounted(fetchData)
           </div>
           
           <form @submit.prevent="simpanOpname" class="p-5 space-y-4 bg-purple-50/30">
-            <div>
-               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Pilih Bahan Baku</label>
-               <select v-model="form.bahan_id" @change="onBahanChange" required class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 bg-white text-gray-800 cursor-pointer transition-colors">
-                 <option value="" disabled>-- Katalog Bahan --</option>
-                 <option v-for="b in listBahan" :key="b.ID" :value="b.ID">{{ b.nama_bahan }}</option>
-               </select>
+            <div class="relative">
+               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Pilih Bahan Baku (Ketik Nama)</label>
+               
+               <input 
+                 type="text" 
+                 v-model="searchQuery" 
+                 @focus="isDropdownOpen = true; searchQuery = ''" 
+                 @blur="tutupDropdown"
+                 placeholder="🔍 Ketik nama tepung, gula..." 
+                 required
+                 class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 bg-white text-gray-800 transition-colors"
+               >
+               
+               <ul v-if="isDropdownOpen" class="absolute z-50 w-full bg-white border-2 border-purple-300 mt-1 rounded-lg shadow-xl max-h-56 overflow-y-auto custom-scrollbar">
+                 <li 
+                   v-for="b in filteredBahan" 
+                   :key="b.ID" 
+                   @mousedown.prevent="selectBahan(b)"
+                   class="p-3 hover:bg-purple-100 cursor-pointer font-bold text-sm text-gray-700 border-b border-gray-100 last:border-0 transition-colors"
+                 >
+                   {{ b.nama_bahan }}
+                 </li>
+                 <li v-if="filteredBahan.length === 0" class="p-4 text-center text-xs font-bold text-red-400 italic bg-red-50">
+                   Bahan tidak ditemukan!
+                 </li>
+               </ul>
             </div>
             
             <div v-if="bahanTerpilih" class="bg-purple-100/50 p-3 rounded-lg border border-purple-200 text-center animate-fade-in">
@@ -157,4 +214,25 @@ onMounted(fetchData)
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+/* Membuat tampilan scrollbar menjadi lebih tipis dan elegan */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Warna jalur/trek scrollbar (Abu-abu sangat muda) */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f9fafb; 
+  border-radius: 8px;
+}
+
+/* Warna batang scroll yang bisa ditarik (Ungu muda menyesuaikan border dropdown) */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d8b4fe; 
+  border-radius: 8px;
+}
+
+/* Warna batang saat disorot/di-hover mouse (Ungu tua) */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a855f7; 
+}
 </style>
