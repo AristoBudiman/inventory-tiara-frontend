@@ -99,32 +99,32 @@ onMounted(fetchAwal)
       </div>
 
       <form @submit.prevent="hitungSemuaKonversi">
-        <div class="border border-gray-200 rounded-xl overflow-hidden mb-6 shadow-sm">
-          <table class="w-full text-left">
+        <div class="border border-gray-200 rounded-xl overflow-x-auto mb-6 shadow-sm">
+          <table class="w-full min-w-max text-left">
             <thead class="bg-gray-100 border-b-2 border-gray-200">
               <tr>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs">Produk</th>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs border-x border-gray-200 text-center bg-blue-50/50 w-32">Sisa Kemarin</th>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-40">Target Pcs</th>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs border-l border-gray-200 text-center bg-green-50/50 w-40">Netto (Cetak)</th>
+                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs whitespace-nowrap">Produk</th>
+                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs border-x border-gray-200 text-center bg-blue-50/50 w-32 whitespace-nowrap">Sisa Kemarin</th>
+                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-40 whitespace-nowrap">Target Pcs</th>
+                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs border-l border-gray-200 text-center bg-green-50/50 w-40 whitespace-nowrap">Netto (Cetak)</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="b in listProduk" :key="b.ID" class="hover:bg-yellow-50/50 transition-colors">
+              <tr v-for="b in listProduk" :key="b.ID" class="hover:bg-yellow-50/50 transition-colors whitespace-nowrap">
                 <td class="p-4">
                   <p class="font-bold text-gray-800 text-base">{{ b.NamaBarang }}</p>
                   <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ b.resep?.nama_resep }}</p>
                 </td>
                 
-                <td class="p-4 text-center border-x border-gray-100 bg-blue-50/30">
+                <td class="p-4 text-center border-x border-gray-100 bg-blue-50/30 whitespace-nowrap">
                    <span class="font-black text-blue-700 text-xl">{{ sisaKemarinMap[b.ID] || 0 }}</span>
                 </td>
 
-                <td class="p-4 bg-yellow-50/20">
+                <td class="p-4 bg-yellow-50/20 whitespace-nowrap">
                   <input v-model.number="b.input_target" type="number" min="0" class="w-24 mx-auto block text-center border-2 border-yellow-300 rounded-lg p-2 font-black outline-none focus:border-yellow-500 focus:bg-yellow-50 text-gray-800 transition-colors shadow-sm">
                 </td>
 
-                <td class="p-4 text-center border-l border-gray-100 bg-green-50/30">
+                <td class="p-4 text-center border-l border-gray-100 bg-green-50/30 whitespace-nowrap">
                   <div v-if="isDihitung" class="font-black text-green-700 text-xl">{{ b.target_bersih }}</div>
                   <div v-else class="text-xs font-bold text-gray-400 uppercase">Menunggu</div>
                 </td>

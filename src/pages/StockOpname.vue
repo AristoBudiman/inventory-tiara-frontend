@@ -167,43 +167,44 @@ onMounted(fetchData)
       <div class="lg:col-span-8">
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div class="bg-gray-50 px-6 py-4 border-b-2 border-gray-200">
-            <h2 class="font-bold text-gray-800">Riwayat Stock Opname (Efisiensi Gudang)</h2>
+            <h2 class="font-bold text-gray-800 text-sm md:text-base">Riwayat Stock Opname (Efisiensi Gudang)</h2>
           </div>
-          
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-100 border-b border-gray-200">
-              <tr>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px]">Waktu Opname</th>
-                <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px]">Nama Bahan</th>
-                <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px]">Stok Komputer</th>
-                <th class="p-4 text-center font-black text-purple-700 uppercase tracking-wider text-[10px]">Fisik Nyata</th>
-                <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-l border-gray-200">Selisih</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="o in listOpname" :key="o.ID" class="hover:bg-purple-50/30 transition-colors group">
-                <td class="p-4">
-                  <!-- PERBAIKAN: Tanggal dan Jam tampil cantik -->
-                  <span class="text-xs font-bold text-gray-800 block">{{ formatDateTime(o.tanggal).date }}</span>
-                  <span class="text-[10px] font-black text-purple-600 block mt-0.5">{{ formatDateTime(o.tanggal).time }}</span>
-                </td>
-                <td class="p-4 font-bold text-gray-800 text-base">
-                  {{ o.bahan.nama_bahan }}
-                  <span class="block text-[10px] font-bold text-gray-400 italic mt-0.5">{{ o.keterangan || 'Tidak ada catatan' }}</span>
-                </td>
-                <td class="p-4 text-center font-bold text-gray-500">{{ o.stok_sistem }} <span class="text-[9px] uppercase">{{ o.bahan.satuan }}</span></td>
-                <td class="p-4 text-center">
-                  <span class="font-black text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">{{ o.stok_fisik }} <span class="text-[9px] uppercase text-purple-500">{{ o.bahan.satuan }}</span></span>
-                </td>
-                <td class="p-4 text-center border-l border-gray-100">
-                  <span class="font-black text-sm px-2 py-1 rounded-md" :class="o.selisih < 0 ? 'bg-red-50 text-red-600' : (o.selisih > 0 ? 'bg-green-50 text-green-600' : 'text-gray-400')">
-                    {{ o.selisih > 0 ? '+' : '' }}{{ o.selisih }}
-                  </span>
-                </td>
-              </tr>
-              <tr v-if="listOpname.length === 0"><td colspan="5" class="p-8 text-center text-gray-400 font-bold italic">Belum ada riwayat opname di gudang.</td></tr>
-            </tbody>
-          </table>
+          <div class="overflow-x-auto w-full">
+            <table class="w-full min-w-max text-sm text-left">
+              <thead class="bg-gray-100 border-b border-gray-200">
+                <tr>
+                  <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Waktu Opname</th>
+                  <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Nama Bahan</th>
+                  <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Stok Komputer</th>
+                  <th class="p-4 text-center font-black text-purple-700 uppercase tracking-wider text-[10px] whitespace-nowrap">Fisik Nyata</th>
+                  <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-l border-gray-200 whitespace-nowrap">Selisih</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr v-for="o in listOpname" :key="o.ID" class="hover:bg-purple-50/30 transition-colors group">
+                  <td class="p-4 whitespace-nowrap">
+                    <!-- PERBAIKAN: Tanggal dan Jam tampil cantik -->
+                    <span class="text-xs font-bold text-gray-800 block">{{ formatDateTime(o.tanggal).date }}</span>
+                    <span class="text-[10px] font-black text-purple-600 block mt-0.5">{{ formatDateTime(o.tanggal).time }}</span>
+                  </td>
+                  <td class="p-4 font-bold text-gray-800 text-base whitespace-nowrap">
+                    {{ o.bahan.nama_bahan }}
+                    <span class="block text-[10px] font-bold text-gray-400 italic mt-0.5">{{ o.keterangan || 'Tidak ada catatan' }}</span>
+                  </td>
+                  <td class="p-4 text-center font-bold text-gray-500 whitespace-nowrap">{{ o.stok_sistem }} <span class="text-[9px] uppercase">{{ o.bahan.satuan }}</span></td>
+                  <td class="p-4 text-center whitespace-nowrap">
+                    <span class="font-black text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">{{ o.stok_fisik }} <span class="text-[9px] uppercase text-purple-500">{{ o.bahan.satuan }}</span></span>
+                  </td>
+                  <td class="p-4 text-center border-l border-gray-100 whitespace-nowrap">
+                    <span class="font-black text-sm px-2 py-1 rounded-md" :class="o.selisih < 0 ? 'bg-red-50 text-red-600' : (o.selisih > 0 ? 'bg-green-50 text-green-600' : 'text-gray-400')">
+                      {{ o.selisih > 0 ? '+' : '' }}{{ o.selisih }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="listOpname.length === 0"><td colspan="5" class="p-8 text-center text-gray-400 font-bold italic">Belum ada riwayat opname di gudang.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

@@ -159,21 +159,21 @@ onMounted(fetchMasterData)
     </div>
 
     <!-- TABEL PRODUK -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <table class="w-full text-left">
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+      <table class="w-full min-w-max text-left">
           <thead class="bg-gray-100 border-b-2 border-gray-200">
               <tr>
-                  <th class="p-4 w-16 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider">Urutan</th>
-                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider">Nama Barang</th>
-                  <th class="p-4 text-right text-[10px] font-black text-gray-600 uppercase tracking-wider">Harga Jual</th>
-                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider pl-8">Struktur Resep & Kemasan</th>
-                  <th class="p-4 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider w-40">Aksi</th>
+                  <th class="p-4 w-16 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Urutan</th>
+                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Nama Barang</th>
+                  <th class="p-4 text-right text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Harga Jual</th>
+                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider pl-8 whitespace-nowrap">Struktur Resep & Kemasan</th>
+                  <th class="p-4 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider w-40 whitespace-nowrap">Aksi</th>
               </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
               <tr v-for="(b, index) in listBarang" :key="b.ID" class="hover:bg-blue-50/50 transition-colors">
                   
-                  <td class="p-4 text-center bg-gray-50 border-r border-gray-100">
+                  <td class="p-4 text-center bg-gray-50 border-r border-gray-100 whitespace-nowrap">
                       <div class="flex flex-col items-center">
                           <button @click="geserAtas(index)" :disabled="index === 0" class="text-gray-400 hover:text-blue-600 disabled:opacity-30 p-0.5 font-black leading-none">▲</button>
                           <span class="text-xs font-bold text-gray-600 my-1">{{ index + 1 }}</span>
@@ -181,18 +181,17 @@ onMounted(fetchMasterData)
                       </div>
                   </td>
                   
-                  <td class="p-4">
+                  <td class="p-4 whitespace-nowrap">
                      <p class="font-bold text-gray-800 text-base mb-1">{{ b.NamaBarang }}</p>
                      <span v-if="!b.resep_id" class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Titipan</span>
                   </td>
                   
-                  <td class="p-4 text-right">
+                  <td class="p-4 text-right whitespace-nowrap">
                     <span class="font-black text-blue-700 text-base">Rp {{ formatRp(b.HargaDefault) }}</span>
                   </td>
                   
-                  <td class="p-4 pl-8">
+                  <td class="p-4 pl-8 whitespace-nowrap">
                     <div class="flex flex-col gap-2">
-                      <!-- Info Resep -->
                       <div v-if="b.resep_id" class="flex items-center gap-2">
                          <span class="text-orange-500 text-sm">🥣</span>
                          <div class="bg-orange-50 border border-orange-200 rounded px-2 py-1 flex items-center gap-2">
@@ -202,7 +201,6 @@ onMounted(fetchMasterData)
                          </div>
                       </div>
                       
-                      <!-- Info Kemasan -->
                       <div v-if="b.kemasan_detail && b.kemasan_detail.length > 0" class="flex items-start gap-2">
                          <span class="text-purple-500 text-sm mt-0.5">📦</span>
                          <div class="flex flex-wrap gap-1.5">
@@ -214,8 +212,7 @@ onMounted(fetchMasterData)
                     </div>
                   </td>
                   
-                  <td class="p-4 text-center">
-                      <!-- Tombol Solid Selalu Terlihat -->
+                  <td class="p-4 text-center whitespace-nowrap">
                       <div class="flex justify-center gap-1.5">
                           <button @click="editBarang(b)" class="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded font-bold transition-colors">Edit</button>
                           <button @click="hapusBarang(b.ID)" class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded font-bold transition-colors">Del</button>

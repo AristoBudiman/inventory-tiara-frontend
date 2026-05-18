@@ -102,34 +102,34 @@ onMounted(fetchBelanja)
     </div>
 
     <!-- TABEL LAPORAN -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <table class="w-full text-sm text-left">
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+      <table class="w-full min-w-max text-sm text-left">
         <thead class="bg-gray-100 border-b-2 border-gray-200">
           <tr>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] w-32">Tgl Nota</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px]">Nama Bahan</th>
-            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-x border-gray-200 w-32">Qty Masuk</th>
-            <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40">Harga Beli/Satuan</th>
-            <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48">Total Biaya (Rp)</th>
-            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-36">Status Bayar</th>
-            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-24">Aksi</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] w-32 whitespace-nowrap">Tgl Nota</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Nama Bahan</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-x border-gray-200 w-32 whitespace-nowrapv">Qty Masuk</th>
+            <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40 whitespace-nowrap">Harga Beli/Satuan</th>
+            <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48 whitespace-nowrap">Total Biaya (Rp)</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-36 whitespace-nowrap">Status Bayar</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-24 whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="b in listBelanja" :key="b.ID" class="hover:bg-red-50/30 transition-colors group">
-            <td class="p-4 font-bold text-gray-600">{{ formatTanggal(b.tanggal) }}</td>
-            <td class="p-4">
+            <td class="p-4 font-bold text-gray-600 whitespace-nowrap">{{ formatTanggal(b.tanggal) }}</td>
+            <td class="p-4 whitespace-nowrap">
                <p class="font-bold text-gray-900 text-base mb-0.5">{{ b.bahan.nama_bahan }}</p>
                <p class="text-[10px] font-bold text-gray-400 italic">{{ b.keterangan || 'Tanpa catatan' }}</p>
             </td>
-            <td class="p-4 text-center border-x border-gray-100 bg-gray-50/50">
+            <td class="p-4 text-center border-x border-gray-100 bg-gray-50/50 whitespace-nowrap">
                <span class="font-black text-blue-700 text-base">{{ b.qty }} <span class="text-[10px] font-bold text-gray-500 uppercase">{{ b.bahan.satuan }}</span></span>
             </td>
-            <td class="p-4 text-right font-bold text-gray-600">Rp {{ formatRp(b.harga_beli_satuan) }}</td>
-            <td class="p-4 text-right font-black text-red-700 border-l border-gray-100 bg-red-50/30 text-base">
+            <td class="p-4 text-right font-bold text-gray-600 whitespace-nowrap">Rp {{ formatRp(b.harga_beli_satuan) }}</td>
+            <td class="p-4 text-right font-black text-red-700 border-l border-gray-100 bg-red-50/30 text-base whitespace-nowrap">
                Rp {{ formatRp(b.total_biaya) }}
             </td>
-            <td class="p-4 text-center border-l border-gray-100">
+            <td class="p-4 text-center border-l border-gray-100 whitespace-nowrap">
               <div v-if="b.is_lunas" class="flex flex-col gap-2">
                 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-green-200">
                   LUNAS
@@ -148,7 +148,7 @@ onMounted(fetchBelanja)
                 </button>
               </div>
             </td>
-            <td class="p-4 text-center border-l border-gray-100">
+            <td class="p-4 text-center border-l border-gray-100 whitespace-nowrap">
                 <button @click="hapusPembelian(b.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   Hapus

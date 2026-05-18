@@ -119,7 +119,7 @@ onMounted(fetchBahan)
           </div>
           <div class="md:col-span-2">
             <label class="block text-[10px] font-bold uppercase tracking-wider mb-2 text-green-600">HPP / Harga Modal</label>
-            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" class="w-full border-2 rounded-lg p-2.5 font-black outline-none border-green-300 focus:border-green-500 text-green-700 bg-white"title="Harga Modal saat ini">
+            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" class="w-full border-2 rounded-lg p-2.5 font-black text-center outline-none border-green-300 focus:border-green-500 text-green-700 bg-white"title="Harga Modal saat ini">
           </div>
           <div class="md:col-span-2 flex gap-2">
             <button v-if="isEdit" type="button" @click="isEdit = false; formBahan = {ID:null, nama_bahan:'', satuan:'gr', batas_minimum:0}" class="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 transition-colors">Batal</button>
@@ -132,14 +132,14 @@ onMounted(fetchBahan)
     </div>
 
     <!-- Tabel Data -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <table class="w-full text-sm text-left">
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+      <table class="w-full min-w-max text-sm text-left">
         <thead class="bg-gray-100 border-b-2 border-gray-200">
           <tr>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs">Nama Bahan</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-48">Stok Gudang</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right">HPP Terakhir</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64">Aksi</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs whitespace-nowrap">Nama Bahan</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-48 whitespace-nowrap">Stok Gudang</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right whitespace-nowrap">HPP Terakhir</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64 whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <draggable 
@@ -154,12 +154,12 @@ onMounted(fetchBahan)
           <template #item="{ element, index }">
             <tr class="hover:bg-blue-50/50 transition-colors bg-white">
               
-              <td class="p-4 font-bold text-gray-800 text-base">
+              <td class="p-4 font-bold text-gray-800 text-base whitespace-nowrap">
                 <span class="text-gray-400 mr-3 text-lg drag-handle cursor-grab active:cursor-grabbing" title="Tahan dan geser">☰</span>
                 {{ element.nama_bahan }}
               </td>
 
-              <td class="p-4 text-center">
+              <td class="p-4 text-center whitespace-nowrap">
                 <div class="inline-flex items-baseline justify-center px-3 py-1 rounded-lg border-2 shadow-sm" :class="element.stok <= element.batas_minimum ? 'bg-red-50 border-red-400 text-red-700 animate-pulse' : 'bg-white border-blue-200 text-blue-800'">
                   <span class="font-black text-xl mr-1">{{ element.stok }}</span> 
                   <span class="text-xs font-bold uppercase">{{ element.satuan }}</span>
@@ -167,12 +167,12 @@ onMounted(fetchBahan)
                 <p v-if="element.stok <= element.batas_minimum" class="text-[10px] text-red-600 font-black mt-1 uppercase tracking-widest">⚠️ Stok Kritis</p>
               </td>
 
-              <td class="p-4 text-right">
+              <td class="p-4 text-right whitespace-nowrap">
                 <span class="font-bold text-gray-800 text-base">Rp {{ formatRp(element.harga_saat_ini) }}</span>
                 <span class="text-[10px] text-gray-500 font-medium ml-1">/ {{ element.satuan }}</span>
               </td>
 
-              <td class="p-4">
+              <td class="p-4 whitespace-nowrap">
                 <div class="flex justify-center gap-2">
                   <button @click="bukaModalBeli(element)" class="bg-green-500 hover:bg-green-600 text-white shadow-sm px-3 py-1.5 rounded font-bold text-xs flex items-center gap-1 transition-colors">
                     🛒 Restok

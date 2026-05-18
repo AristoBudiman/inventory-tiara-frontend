@@ -40,11 +40,11 @@ onMounted(fetchJurnal)
           <h1 class="text-3xl font-black text-gray-800 tracking-tight">🌙 Laporan Tutup Buku</h1>
           <p class="text-sm text-gray-500 font-medium mt-1">Audit efisiensi kinerja koki dan inventarisasi sisa layak jual harian.</p>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 flex items-center">
-               <input type="date" v-model="filterTanggal" @change="fetchJurnal" class="border-none bg-transparent font-bold focus:ring-0 text-gray-800 outline-none cursor-pointer">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+            <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 flex items-center justify-center">
+               <input type="date" v-model="filterTanggal" @change="fetchJurnal" class="border-none bg-transparent font-bold focus:ring-0 text-gray-800 outline-none cursor-pointer text-center w-full">
             </div>
-            <button @click="eksekusiTutupBuku" :disabled="isCalculating" class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
+            <button @click="eksekusiTutupBuku" :disabled="isCalculating" class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 transition-all active:scale-95 whitespace-nowrap flex justify-center items-center gap-2">
               {{ isCalculating ? 'Menghitung...' : '⚙️ EKSEKUSI' }}
             </button>
         </div>
