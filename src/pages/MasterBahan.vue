@@ -6,15 +6,15 @@ const listBahan = ref([])
 const isEdit = ref(false)
 
 const formBahan = ref({ ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 })
+
+// STATE UNTUK POP-UP MODAL
+const showModalBahan = ref(false) 
 const showModalBeli = ref(false)
 
-// UBAH: formBeli sekarang menangkap 'total_biaya' alih-alih 'harga_beli_satuan'
 const formBeli = ref({ tanggal: new Date().toISOString().split('T')[0], bahan_id: null, nama_bahan_tampil: '', qty: 0, total_biaya: 0, keterangan: '', is_lunas: true })
 
 const simpanUrutan = async () => {
-  // Susun payload dari urutan array terbaru
   const payload = listBahan.value.map((b, i) => ({ id: b.ID, urutan: i + 1 }))
-  
   try {
     const token = localStorage.getItem('inventory_token')
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bahan/reorder`, {
@@ -39,10 +39,28 @@ const simpanBahan = async () => {
   const url = isEdit.value ? `${import.meta.env.VITE_API_URL}/api/bahan/${formBahan.value.ID}` : `${import.meta.env.VITE_API_URL}/api/bahan`
   const token = localStorage.getItem('inventory_token')
   await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formBahan.value) })
-  isEdit.value = false; formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 }; fetchBahan()
+  
+  // Tutup modal dan reset setelah berhasil
+  showModalBahan.value = false
+  isEdit.value = false
+  formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 }
+  fetchBahan()
 }
 
-const editBahan = (b) => { isEdit.value = true; formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan, batas_minimum: b.batas_minimum, harga_saat_ini: b.harga_saat_ini } }
+// BUKA POP-UP TAMBAH BAHAN BARU
+const tambahBahanBaru = () => {
+  isEdit.value = false
+  formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 }
+  showModalBahan.value = true
+}
+
+// BUKA POP-UP EDIT BAHAN
+const editBahan = (b) => { 
+  isEdit.value = true
+  formBahan.value = { ID: b.ID, nama_bahan: b.nama_bahan, satuan: b.satuan, batas_minimum: b.batas_minimum, harga_saat_ini: b.harga_saat_ini }
+  showModalBahan.value = true
+}
+
 const hapusBahan = async (id) => {
   if(confirm('Hapus bahan ini ke tempat sampah?')) {
     const token = localStorage.getItem('inventory_token')
@@ -51,22 +69,19 @@ const hapusBahan = async (id) => {
   }
 }
 
-// UBAH: Saat buka modal, reset 'total_biaya' ke 0
 const bukaModalBeli = (b) => { formBeli.value = { tanggal: new Date().toISOString().split('T')[0], bahan_id: b.ID, nama_bahan_tampil: b.nama_bahan, qty: 0, total_biaya: 0, keterangan: '', is_lunas: true }; showModalBeli.value = true }
 
 const simpanPembelian = async () => {
   if(formBeli.value.qty <= 0) return alert('Qty belanja tidak boleh 0!')
   if(formBeli.value.total_biaya < 0) return alert('Total biaya tidak valid!')
   
-  // RUMUS AJAIB: Sistem yang hitung HPP otomatisnya!
   const harga_satuan_otomatis = formBeli.value.total_biaya / formBeli.value.qty
 
-  // Susun data untuk dikirim ke Backend persis seperti sebelumnya
   const payload = {
     tanggal: formBeli.value.tanggal,
     bahan_id: formBeli.value.bahan_id,
     qty: formBeli.value.qty,
-    harga_beli_satuan: harga_satuan_otomatis, // Ini yang diterima oleh Golang
+    harga_beli_satuan: harga_satuan_otomatis,
     keterangan: formBeli.value.keterangan,
     is_lunas: formBeli.value.is_lunas
   }
@@ -79,59 +94,23 @@ const simpanPembelian = async () => {
   })
   if (res.ok) { alert('Belanja berhasil dicatat! Stok & Harga terupdate.'); showModalBeli.value = false; fetchBahan() }
 }
+
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
 onMounted(fetchBahan)
 </script>
 
 <template>
   <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
-    <!-- Header -->
-    <div class="flex items-center justify-between border-b-2 border-gray-200 pb-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-gray-200 pb-4 gap-4">
       <div>
         <h1 class="text-3xl font-black text-gray-800 tracking-tight">📦 Katalog Bahan & Kemasan</h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Kelola data mentah, stok gudang, dan HPP otomatis.</p>
       </div>
+      <button @click="tambahBahanBaru" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
+        ➕ Tambah Bahan Baru
+      </button>
     </div>
 
-    <!-- Panel Form -->
-    <div class="bg-white rounded-xl shadow-md border border-blue-100 overflow-hidden">
-      <div class="bg-blue-600 px-6 py-4 flex items-center gap-3">
-        <h2 class="text-lg font-bold text-white">{{ isEdit ? '✏️ Edit Data Bahan' : '✨ Daftarkan Bahan Baru' }}</h2>
-      </div>
-      <form @submit.prevent="simpanBahan" class="p-6 bg-blue-50/30">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
-          <div class="md:col-span-5">
-            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Nama Bahan / Kemasan</label>
-            <input v-model="formBahan.nama_bahan" type="text" required placeholder="Contoh: Tepung Segitiga Biru" class="w-full border-2 border-gray-300 rounded-lg p-2.5 focus:border-blue-500 font-bold outline-none transition-colors text-gray-800 bg-white">
-          </div>
-          <div class="md:col-span-3">
-            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Satuan (UOM)</label>
-            <select v-model="formBahan.satuan" class="w-full border-2 border-gray-300 rounded-lg p-2.5 focus:border-blue-500 font-bold outline-none transition-colors text-gray-800 bg-white cursor-pointer">
-              <option value="gr">Gram (gr)</option>
-              <option value="ml">MiliLiter (ml)</option>
-              <option value="pcs">Pieces (pcs)</option>
-              <option value="lmbr">Lembar (lmbr)</option>
-            </select>
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-red-600 uppercase tracking-wider mb-2">Batas Minimum</label>
-            <input v-model.number="formBahan.batas_minimum" type="number" required min="0" step="any" class="w-full border-2 border-red-300 bg-white rounded-lg p-2.5 focus:border-red-500 font-black text-red-600 text-center outline-none transition-colors">
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold uppercase tracking-wider mb-2 text-green-600">HPP / Harga Modal</label>
-            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" class="w-full border-2 rounded-lg p-2.5 font-black text-center outline-none border-green-300 focus:border-green-500 text-green-700 bg-white"title="Harga Modal saat ini">
-          </div>
-          <div class="md:col-span-2 flex gap-2">
-            <button v-if="isEdit" type="button" @click="isEdit = false; formBahan = {ID:null, nama_bahan:'', satuan:'gr', batas_minimum:0}" class="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 transition-colors">Batal</button>
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md transition-colors">
-              {{ isEdit ? 'Simpan' : 'Tambah' }}
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- Tabel Data -->
     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
       <table class="w-full min-w-max text-sm text-left">
         <thead class="bg-gray-100 border-b-2 border-gray-200">
@@ -188,8 +167,50 @@ onMounted(fetchBahan)
       </table>
     </div>
 
-    <!-- MODAL POPUP BELANJA -->
-    <div v-if="showModalBeli" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div v-if="showModalBahan" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
+      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg border-t-8" :class="isEdit ? 'border-blue-500' : 'border-blue-700'">
+        <h2 class="text-xl font-black text-gray-800 mb-6">
+          {{ isEdit ? '✏️ Edit Data Bahan' : '✨ Daftarkan Bahan Baru' }}
+        </h2>
+
+        <form @submit.prevent="simpanBahan" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Nama Bahan / Kemasan</label>
+            <input v-model="formBahan.nama_bahan" type="text" required placeholder="Contoh: Tepung Segitiga Biru" class="w-full border-2 border-gray-300 rounded p-2 focus:border-blue-500 font-bold outline-none text-gray-800 bg-white">
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Satuan (UOM)</label>
+              <select v-model="formBahan.satuan" class="w-full border-2 border-gray-300 rounded p-2 focus:border-blue-500 font-bold outline-none text-gray-800 bg-white cursor-pointer">
+                <option value="gr">Gram (gr)</option>
+                <option value="ml">MiliLiter (ml)</option>
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="lmbr">Lembar (lmbr)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-red-600 uppercase tracking-wider mb-1">Batas Minimum</label>
+              <input v-model.number="formBahan.batas_minimum" type="number" required min="0" step="any" class="w-full border-2 border-red-300 bg-red-50 rounded p-2 focus:border-red-500 font-black text-red-700 outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider mb-1 text-green-600">HPP / Harga Modal</label>
+            <input v-model.number="formBahan.harga_saat_ini" type="number" min="0" step="any" class="w-full border-2 border-green-300 bg-green-50 rounded p-2 focus:border-green-500 font-black text-green-700 outline-none" title="Harga Modal saat ini">
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
+            <button type="button" @click="showModalBahan = false" class="px-5 py-2 font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 rounded transition-colors">Batal</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-bold shadow-md transition-colors">
+              {{ isEdit ? 'Simpan Perubahan' : 'Tambah Bahan' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="showModalBeli" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
       <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-8 border-green-500">
         <h2 class="text-xl font-black text-gray-800 mb-1">🛒 Catat Pembelian Bahan</h2>
         <p class="text-sm font-bold text-gray-500 mb-6">Bahan: <span class="text-green-700">{{ formBeli.nama_bahan_tampil }}</span></p>
@@ -205,13 +226,11 @@ onMounted(fetchBahan)
               <input type="number" v-model.number="formBeli.qty" required min="1" step="any" class="w-full border-2 border-gray-300 rounded p-2 focus:border-green-500 font-black text-gray-800 outline-none">
             </div>
             <div>
-              <!-- UBAH: Text label disesuaikan, v-model diarahkan ke total_biaya -->
               <label class="block text-xs font-bold text-gray-600 mb-1">Total Harga Beli / Nota (Rp)</label>
               <input type="number" v-model.number="formBeli.total_biaya" required min="0" step="any" class="w-full border-2 border-red-200 bg-red-50 rounded p-2 focus:border-red-500 font-black text-red-700 outline-none">
             </div>
           </div>
           
-          <!-- UBAH: Tampilan HPP dihitung langsung di layar admin -->
           <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg text-right">
              <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">HPP Baru Per Satuan (Otomatis):</p>
              <p class="text-xl font-black text-blue-700">Rp {{ formatRp(formBeli.qty > 0 ? formBeli.total_biaya / formBeli.qty : 0) }}</p>
