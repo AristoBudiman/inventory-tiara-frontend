@@ -107,55 +107,69 @@ onMounted(fetchBelanja)
         <thead class="bg-gray-100 border-b-2 border-gray-200">
           <tr>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] w-32 whitespace-nowrap">Tgl Nota</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Nama Bahan</th>
-            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-x border-gray-200 w-32 whitespace-nowrapv">Qty Masuk</th>
-            <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40 whitespace-nowrap">Harga Beli/Satuan</th>
-            <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48 whitespace-nowrap">Total Biaya (Rp)</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-[10px] whitespace-nowrap">Keterangan / Item Belanja</th>
+            <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] border-x border-gray-200 w-32 whitespace-nowrap">Qty Masuk</th>
+            <th class="p-4 text-right font-black text-gray-600 uppercase tracking-wider text-[10px] w-40 whitespace-nowrap">Harga / Satuan</th>
+            <th class="p-4 text-right font-black text-red-700 uppercase tracking-wider text-[10px] border-l border-gray-200 bg-red-50/50 w-48 whitespace-nowrap">Subtotal Biaya</th>
             <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-36 whitespace-nowrap">Status Bayar</th>
             <th class="p-4 text-center font-black text-gray-600 uppercase tracking-wider text-[10px] w-24 whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr v-for="b in listBelanja" :key="b.ID" class="hover:bg-red-50/30 transition-colors group">
-            <td class="p-4 font-bold text-gray-600 whitespace-nowrap">{{ formatTanggal(b.tanggal) }}</td>
+        <tbody v-for="nota in listBelanja" :key="nota.ID" class="border-b-[3px] border-gray-300 bg-white">
+          
+          <tr class="bg-gray-50/80 hover:bg-gray-100 transition-colors">
+            <td class="p-4 font-bold text-gray-800 whitespace-nowrap">{{ formatTanggal(nota.tanggal) }}</td>
             <td class="p-4 whitespace-nowrap">
-               <p class="font-bold text-gray-900 text-base mb-0.5">{{ b.bahan.nama_bahan }}</p>
-               <p class="text-[10px] font-bold text-gray-400 italic">{{ b.keterangan || 'Tanpa catatan' }}</p>
+               <p class="font-black text-gray-900 text-sm mb-0.5">Nota #BELI-{{ nota.ID }}</p>
+               <p class="text-[10px] font-bold text-gray-500 uppercase">{{ nota.keterangan || 'Tanpa catatan' }}</p>
             </td>
-            <td class="p-4 text-center border-x border-gray-100 bg-gray-50/50 whitespace-nowrap">
-               <span class="font-black text-blue-700 text-base">{{ b.qty }} <span class="text-[10px] font-bold text-gray-500 uppercase">{{ b.bahan.satuan }}</span></span>
+            <td class="p-4 text-center border-x border-gray-200 bg-gray-100/50 whitespace-nowrap">
+               <span class="font-bold text-gray-500 text-xs">{{ nota.details ? nota.details.length : 0 }} Macam Item</span>
             </td>
-            <td class="p-4 text-right font-bold text-gray-600 whitespace-nowrap">Rp {{ formatRp(b.harga_beli_satuan) }}</td>
-            <td class="p-4 text-right font-black text-red-700 border-l border-gray-100 bg-red-50/30 text-base whitespace-nowrap">
-               Rp {{ formatRp(b.total_biaya) }}
+            <td class="p-4 text-right font-bold text-gray-400 text-xs whitespace-nowrap">Grand Total ➡️</td>
+            <td class="p-4 text-right font-black text-red-700 border-l border-gray-200 bg-red-50/50 text-base whitespace-nowrap">
+               Rp {{ formatRp(nota.total_biaya) }}
             </td>
-            <td class="p-4 text-center border-l border-gray-100 whitespace-nowrap">
-              <div v-if="b.is_lunas" class="flex flex-col gap-2">
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-green-200">
-                  LUNAS
-                </span>
-                <button @click="toggleStatusBayar(b)" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-[9px] font-bold px-2 py-1.5 rounded shadow-sm transition-all active:scale-95">
-                  Batal Lunas ↩
-                </button>
+            <td class="p-4 text-center border-l border-gray-200 whitespace-nowrap">
+              <div v-if="nota.is_lunas" class="flex flex-col gap-2">
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-green-200">LUNAS</span>
+                <button @click="toggleStatusBayar(nota)" class="bg-white hover:bg-gray-100 text-gray-600 border border-gray-300 text-[9px] font-bold px-2 py-1.5 rounded shadow-sm transition-all active:scale-95">Batal Lunas ↩</button>
               </div>
-              
               <div v-else class="flex flex-col gap-2">
-                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-red-200">
-                  HUTANG
-                </span>
-                <button @click="toggleStatusBayar(b)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-2 py-1.5 rounded shadow transition-all active:scale-95">
-                  Tandai Lunas ✔
-                </button>
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-red-200">HUTANG</span>
+                <button @click="toggleStatusBayar(nota)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-2 py-1.5 rounded shadow transition-all active:scale-95">Tandai Lunas ✔</button>
               </div>
             </td>
-            <td class="p-4 text-center border-l border-gray-100 whitespace-nowrap">
-                <button @click="hapusPembelian(b.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  Hapus
+            <td class="p-4 text-center border-l border-gray-200 whitespace-nowrap">
+                <button @click="hapusPembelian(nota.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                  ❌ Hapus
                 </button>
             </td>
           </tr>
-          <tr v-if="listBelanja.length === 0">
+
+          <tr v-for="d in nota.details" :key="d.ID" class="hover:bg-blue-50/30 transition-colors border-t border-gray-100">
+            <td class="p-3"></td>
+            <td class="p-3 pl-8 whitespace-nowrap">
+               <p class="font-bold text-gray-700 text-sm flex items-center gap-2">
+                 <span class="text-gray-300">↳</span> {{ d.bahan?.nama_bahan || 'Bahan Terhapus' }}
+               </p>
+            </td>
+            <td class="p-3 text-center border-x border-gray-100 whitespace-nowrap">
+               <span class="font-black text-blue-700 text-sm">{{ d.qty }}</span>
+               <span v-if="d.bahan" class="text-[9px] font-bold text-gray-500 uppercase ml-1">{{ d.bahan.satuan }}</span>
+            </td>
+            <td class="p-3 text-right font-semibold text-gray-600 whitespace-nowrap">
+               Rp {{ formatRp(d.harga_beli_satuan) }}
+            </td>
+            <td class="p-3 text-right font-black text-gray-800 border-l border-gray-100 whitespace-nowrap">
+               Rp {{ formatRp(d.subtotal) }}
+            </td>
+            <td colspan="2" class="border-l border-gray-100 bg-gray-50/30"></td>
+          </tr>
+        </tbody>
+
+        <tbody v-if="listBelanja.length === 0">
+          <tr>
             <td colspan="7" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
           </tr>
         </tbody>
