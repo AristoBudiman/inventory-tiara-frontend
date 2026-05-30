@@ -15,14 +15,42 @@ const endDate = ref(defaultEnd)
 const listBelanja = ref([])
 const isFetching = ref(false)
 
+// 1. STATE BARU: Saklar mode tampilan
+const viewMode = ref('aktif') 
+
 const fetchBelanja = async () => {
   isFetching.value = true
   const token = localStorage.getItem('inventory_token')
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian?start=${startDate.value}&end=${endDate.value}`, {
+  
+  // 2. SISIPKAN PARAMETER STATUS KE URL BACKEND
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian?start=${startDate.value}&end=${endDate.value}&status=${viewMode.value}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
+  
   if (res.ok) listBelanja.value = await res.json() || []
   isFetching.value = false
+}
+
+// 3. FUNGSI BARU: MEMULIHKAN NOTA YANG TERHAPUS
+const pulihkanPembelian = async (id) => {
+  if(confirm('♻️ PULIHKAN NOTA INI?\n\n- Stok bahan akan DITAMBAHKAN kembali ke gudang.\n- Saldo Kas akan DIPOTONG kembali (jika nota ini Lunas).')) {
+    const token = localStorage.getItem('inventory_token')
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${id}/pulihkan`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if(res.ok) {
+        alert('Data berhasil dipulihkan dan masuk ke laporan aktif!')
+        fetchBelanja() 
+      } else {
+        alert('Gagal memulihkan nota.')
+      }
+    } catch (err) {
+      alert('Error server.')
+    }
+  }
 }
 
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
@@ -85,18 +113,32 @@ onMounted(fetchBelanja)
     </div>
 
     <!-- FILTER TANGGAL (Desain Merah) -->
-    <div class="bg-white p-5 rounded-xl shadow-sm border border-red-100 flex flex-wrap items-end gap-5">
-      <div class="flex-1 min-w-50">
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-red-100 flex flex-col md:flex-row items-end gap-5 mb-4">
+      <div class="flex-1 w-full">
         <label class="block text-[10px] font-black text-red-800 uppercase tracking-wider mb-2">Periode Mulai</label>
         <input type="date" v-model="startDate" class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-red-500 text-gray-700 bg-gray-50 focus:bg-white transition-colors cursor-pointer">
       </div>
-      <div class="flex-1 min-w-50">
+      <div class="flex-1 w-full">
         <label class="block text-[10px] font-black text-red-800 uppercase tracking-wider mb-2">Periode Sampai</label>
         <input type="date" v-model="endDate" class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-red-500 text-gray-700 bg-gray-50 focus:bg-white transition-colors cursor-pointer">
       </div>
-      <div class="w-full md:w-auto">
-        <button @click="fetchBelanja" :disabled="isFetching" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-black px-8 py-3 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-2">
-          {{ isFetching ? '⏳ Memuat...' : '🔍 Tampilkan Data' }}
+      <div class="w-full md:w-auto flex flex-col md:flex-row gap-3">
+        
+        <div class="flex bg-gray-100 rounded-lg p-1 border border-gray-200 self-end">
+          <button @click="viewMode = 'aktif'; fetchBelanja()" 
+                  :class="viewMode === 'aktif' ? 'bg-white text-red-600 shadow-sm font-black' : 'text-gray-500 font-bold hover:text-gray-700'" 
+                  class="px-4 py-2.5 rounded-md text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+            📋 Mode Aktif
+          </button>
+          <button @click="viewMode = 'sampah'; fetchBelanja()" 
+                  :class="viewMode === 'sampah' ? 'bg-red-600 text-white shadow-sm font-black' : 'text-gray-500 font-bold hover:text-gray-700'" 
+                  class="px-4 py-2.5 rounded-md text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+            🗑️ Terhapus
+          </button>
+        </div>
+
+        <button @click="fetchBelanja" :disabled="isFetching" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-black px-6 py-2.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-2">
+          {{ isFetching ? '⏳...' : '🔍 Tampilkan' }}
         </button>
       </div>
     </div>
@@ -133,16 +175,22 @@ onMounted(fetchBelanja)
             <td class="p-4 text-center border-l border-gray-200 whitespace-nowrap">
               <div v-if="nota.is_lunas" class="flex flex-col gap-2">
                 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-green-200">LUNAS</span>
-                <button @click="toggleStatusBayar(nota)" class="bg-white hover:bg-gray-100 text-gray-600 border border-gray-300 text-[9px] font-bold px-2 py-1.5 rounded shadow-sm transition-all active:scale-95">Batal Lunas ↩</button>
+                <button v-if="viewMode === 'aktif'" @click="toggleStatusBayar(nota)" class="bg-white hover:bg-gray-100 text-gray-600 border border-gray-300 text-[9px] font-bold px-2 py-1.5 rounded shadow-sm transition-all active:scale-95">Batal Lunas ↩</button>
+                <span v-else class="text-[9px] font-bold text-gray-400 italic">Terkunci</span>
               </div>
               <div v-else class="flex flex-col gap-2">
                 <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-sm border border-red-200">HUTANG</span>
-                <button @click="toggleStatusBayar(nota)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-2 py-1.5 rounded shadow transition-all active:scale-95">Tandai Lunas ✔</button>
+                <button v-if="viewMode === 'aktif'" @click="toggleStatusBayar(nota)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-2 py-1.5 rounded shadow transition-all active:scale-95">Tandai Lunas ✔</button>
+                <span v-else class="text-[9px] font-bold text-gray-400 italic">Terkunci</span>
               </div>
             </td>
+
             <td class="p-4 text-center border-l border-gray-200 whitespace-nowrap">
-                <button @click="hapusPembelian(nota.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                <button v-if="viewMode === 'aktif'" @click="hapusPembelian(nota.ID)" title="Batalkan & Hapus Belanja" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
                   ❌ Hapus
+                </button>
+                <button v-if="viewMode === 'sampah'" @click="pulihkanPembelian(nota.ID)" title="Pulihkan Nota" class="w-full bg-green-50 hover:bg-green-600 text-green-700 hover:text-white border border-green-200 text-xs font-black px-2 py-2 rounded shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                  ♻️ Pulihkan
                 </button>
             </td>
           </tr>
@@ -170,7 +218,9 @@ onMounted(fetchBelanja)
 
         <tbody v-if="listBelanja.length === 0">
           <tr>
-            <td colspan="7" class="p-12 text-center text-gray-400 font-bold bg-gray-50">Tidak ada pengeluaran di rentang tanggal ini.</td>
+            <td colspan="7" class="p-12 text-center text-gray-400 font-bold bg-gray-50">
+              {{ viewMode === 'aktif' ? 'Tidak ada pengeluaran di rentang tanggal ini.' : 'Tempat sampah bersih. Tidak ada nota yang terhapus.' }}
+            </td>
           </tr>
         </tbody>
         <!-- GRAND TOTAL -->

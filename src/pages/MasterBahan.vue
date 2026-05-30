@@ -359,12 +359,12 @@ onMounted(fetchBahan)
 
             <div class="w-full md:w-32">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty Masuk</label>
-              <input type="number" v-model.number="tempBeli.qty" min="0" step="any" placeholder="0" class="w-full border border-gray-300 rounded p-2.5 font-black outline-none text-center">
+              <input type="number" v-model.number="tempBeli.qty" min="0" step="any" class="w-full border border-gray-300 rounded p-2.5 font-black outline-none text-center">
             </div>
 
             <div class="w-full md:w-48 relative">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total Harga Beli (Rp)</label>
-              <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" placeholder="0" class="w-full border border-gray-300 rounded p-2.5 font-black text-red-700 outline-none">
+              <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" class="w-full border border-gray-300 rounded p-2.5 font-black text-red-700 outline-none">
               <p v-if="tempHPP > 0" class="absolute -bottom-4 left-0 text-[10px] font-black text-blue-600 whitespace-nowrap">
                 💡 HPP: Rp {{ formatRp(tempHPP) }} / satuan
               </p>
