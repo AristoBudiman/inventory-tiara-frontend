@@ -165,11 +165,64 @@ const simpanPembelian = async () => {
 
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
 
-watch([showModalBahan, showModalBeli], ([isOpenBahan, isOpenBeli]) => {
-  if (isOpenBahan || isOpenBeli) document.body.style.overflow = 'hidden'
-  else document.body.style.overflow = ''
+// STATE UNTUK POP-UP OPNAME CEPAT
+const showModalOpname = ref(false)
+const formOpname = ref({ ID: null, nama_bahan: '', stok_sistem: 0, stok_fisik: 0, satuan: '', keterangan: '', _original: null })
+
+const bukaModalOpname = (b) => {
+  formOpname.value = {
+    ID: b.ID,
+    nama_bahan: b.nama_bahan,
+    stok_sistem: b.stok,
+    stok_fisik: b.stok, 
+    satuan: b.satuan,
+    keterangan: '',
+    _original: b 
+  }
+  showModalOpname.value = true
+}
+
+const simpanOpnameCepat = async () => {
+  if (formOpname.value.stok_fisik === null || formOpname.value.stok_fisik === '') return alert("Stok fisik harus diisi!")
+  if (formOpname.value.stok_fisik < 0) return alert("Stok fisik tidak boleh negatif!")
+  if (!confirm(`Sesuaikan stok ${formOpname.value.nama_bahan} menjadi ${formOpname.value.stok_fisik} ${formOpname.value.satuan}?`)) return
+  
+  const token = localStorage.getItem('inventory_token')
+  
+  const payloadOpname = { 
+    bahan_id: formOpname.value.ID, 
+    stok_fisik: parseFloat(formOpname.value.stok_fisik), 
+    keterangan: formOpname.value.keterangan || 'Opname Cepat dari Master Bahan' 
+  }
+  
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/opname`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(payloadOpname)
+  })
+  
+  if (res.ok) {
+    alert("Stok berhasil disesuaikan dan tercatat di riwayat Opname!")
+    showModalOpname.value = false
+    fetchBahan()
+  } else {
+    alert("Gagal memperbarui stok!")
+  }
+}
+
+watch([showModalBahan, showModalBeli, showModalOpname], ([isOpenBahan, isOpenBeli, isOpenOpname]) => {
+  if (isOpenBahan || isOpenBeli || isOpenOpname) {
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+  }
 })
-onUnmounted(() => { document.body.style.overflow = '' })
+onUnmounted(() => { 
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
+})
 
 onMounted(fetchBahan)
 </script>
@@ -233,6 +286,7 @@ onMounted(fetchBahan)
 
               <td class="p-4 whitespace-nowrap">
                 <div class="flex justify-center gap-2">
+                  <button @click="bukaModalOpname(element)" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded font-bold text-xs transition-colors" title="Opname Cepat">Opname</button>
                   <button @click="editBahan(element)" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Edit</button>
                   <button @click="hapusBahan(element.ID)" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Del</button>
                 </div>
@@ -463,6 +517,42 @@ onMounted(fetchBahan)
         </div>
       </div>
     </div>
+
+    <!-- MODAL OPNAME CEPAT -->
+    <div v-if="showModalOpname" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
+      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm border-t-8 border-purple-500 animate-fade-in">
+        <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+          <span>⚖️</span> Stok Opname Cepat
+        </h2>
+
+        <div class="bg-purple-50 p-4 rounded-lg text-center mb-6 border border-purple-100">
+          <p class="text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">{{ formOpname.nama_bahan }}</p>
+          <div class="flex items-end justify-center gap-2">
+            <span class="text-3xl font-black text-purple-900">{{ formOpname.stok_sistem }}</span>
+            <span class="text-sm font-bold text-purple-600 uppercase pb-1">{{ formOpname.satuan }}</span>
+          </div>
+          <p class="text-[10px] text-gray-500 mt-2">Stok Komputer Saat Ini</p>
+        </div>
+
+        <form @submit.prevent="simpanOpnameCepat">
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Timbangan Fisik Nyata</label>
+            <input v-model.number="formOpname.stok_fisik" type="number" step="any" min="0" required class="w-full border-2 border-gray-300 bg-white rounded-lg p-3 font-black text-center text-gray-900 outline-none focus:border-purple-500 transition-colors text-xl">
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Selisih (Opsional)</label>
+            <input v-model="formOpname.keterangan" type="text" placeholder="Contoh: Salah hitung kemarin" class="w-full border-2 border-gray-300 bg-white rounded-lg p-2.5 font-bold text-gray-700 outline-none focus:border-purple-500 transition-colors">
+          </div>
+
+          <div class="flex justify-end gap-3">
+            <button type="button" @click="showModalOpname = false" class="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-black shadow-md transition-colors">Sesuaikan Stok</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
