@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 
 const listKomposit = ref([])
 const listBahan = ref([])
@@ -30,7 +30,12 @@ const fetchMasterData = async () => {
 }
 
 const tambahBahan = () => {
-  form.value.details.push({ bahan_id: '', rasio: 1 })
+  form.value.details.push({ bahan_id: '', rasio: 1, _search: '', _isOpen: false })
+}
+
+const getFilteredBahan = (query) => {
+  if (!query) return listBahan.value
+  return listBahan.value.filter(b => b.nama_bahan.toLowerCase().includes(query.toLowerCase()))
 }
 
 const hapusBahan = (index) => {
@@ -72,7 +77,7 @@ const simpanKomposit = async () => {
 
 const bukaModalTambah = () => {
   isEdit.value = false
-  form.value = { id: null, nama_komposit: '', details: [{ bahan_id: '', rasio: 1 }] }
+  form.value = { id: null, nama_komposit: '', details: [{ bahan_id: '', rasio: 1, _search: '', _isOpen: false }] }
   showModal.value = true
 }
 
@@ -81,7 +86,7 @@ const editKomposit = (k) => {
   form.value = {
     id: k.id,
     nama_komposit: k.nama_komposit,
-    details: k.details.map(d => ({ bahan_id: d.bahan_id, rasio: d.rasio }))
+    details: k.details.map(d => ({ bahan_id: d.bahan_id, rasio: d.rasio, _search: d.bahan?.nama_bahan || '', _isOpen: false }))
   }
   showModal.value = true
 }
@@ -96,6 +101,12 @@ const hapusKomposit = async (id) => {
     fetchMasterData()
   }
 }
+
+watch(showModal, (isOpen) => {
+  if (isOpen) document.body.style.overflow = 'hidden'
+  else document.body.style.overflow = ''
+})
+onUnmounted(() => { document.body.style.overflow = '' })
 
 onMounted(fetchMasterData)
 </script>
@@ -145,8 +156,8 @@ onMounted(fetchMasterData)
       </table>
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-2xl border-t-8 border-yellow-400">
+    <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 overflow-y-auto custom-scrollbar flex items-start justify-center p-4">
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-2xl border-t-8 border-yellow-400 mt-10 mb-10 overflow-visible">
         <h2 class="text-xl font-black text-gray-800 mb-6">{{ isEdit ? '✏️ Edit Komposit' : '✨ Buat Komposit Baru' }}</h2>
         
         <form @submit.prevent="simpanKomposit" class="space-y-5">
@@ -161,18 +172,40 @@ onMounted(fetchMasterData)
               <button type="button" @click="tambahBahan" class="text-[10px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-900 px-3 py-1.5 rounded shadow-sm transition-colors">+ Tambah Bahan</button>
             </div>
 
-            <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-              <div v-for="(d, index) in form.details" :key="index" class="flex gap-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                <select v-model="d.bahan_id" required class="flex-1 border-none bg-transparent font-bold text-sm outline-none text-gray-800 cursor-pointer">
-                  <option value="" disabled>Pilih Bahan Baku...</option>
-                  <option v-for="b in listBahan" :key="b.ID" :value="b.ID">{{ b.nama_bahan }} ({{ b.satuan }})</option>
-                </select>
-                <div class="w-px h-6 bg-gray-200"></div>
-                <div class="flex items-center">
-                  <span class="text-[10px] font-bold text-gray-400 mr-2 uppercase tracking-widest">Rasio:</span>
-                  <input v-model.number="d.rasio" type="number" step="any" min="0.01" required class="w-20 border border-gray-300 bg-gray-50 rounded p-1.5 text-center font-black text-sm outline-none focus:border-yellow-500 text-yellow-700">
+            <div class="space-y-2 pr-1">
+              <div v-for="(d, index) in form.details" :key="index" class="bg-white p-2 rounded-lg border border-gray-200 shadow-sm relative">
+                
+                <div class="flex gap-2 items-center">
+                  <div class="flex-1 relative">
+                    <input 
+                      type="text" 
+                      v-model="d._search" 
+                      @focus="d._isOpen = true" 
+                      placeholder="Cari bahan baku..." 
+                      class="w-full text-sm border-none bg-transparent font-bold outline-none text-gray-800"
+                    >
+                  </div>
+                  <div class="w-px h-6 bg-gray-200"></div>
+                  <div class="flex items-center">
+                    <span class="text-[10px] font-bold text-gray-400 mr-2 uppercase tracking-widest">Rasio:</span>
+                    <input v-model.number="d.rasio" type="number" step="any" min="0.01" required class="w-20 border border-gray-300 bg-gray-50 rounded p-1.5 text-center font-black text-sm outline-none focus:border-yellow-500 text-yellow-700">
+                  </div>
+                  <button type="button" @click="hapusBahan(index)" class="text-red-400 hover:text-red-600 font-bold text-2xl leading-none px-2 ml-1">×</button>
                 </div>
-                <button type="button" @click="hapusBahan(index)" class="text-red-400 hover:text-red-600 font-bold text-2xl leading-none px-2 ml-1">×</button>
+
+                <div v-if="d._isOpen" @click="d._isOpen = false" class="fixed inset-0 z-40 cursor-default"></div>
+                <ul v-if="d._isOpen" class="w-full bg-white border border-gray-200 shadow-inner max-h-48 overflow-y-auto rounded-xl mt-2 custom-scrollbar overflow-hidden divide-y divide-gray-100 relative z-50">
+                  <li 
+                    v-for="b in getFilteredBahan(d._search)" 
+                    :key="b.ID" 
+                    @mousedown.prevent="d.bahan_id = b.ID; d._search = b.nama_bahan; d._isOpen = false"
+                    class="px-4 py-3 hover:bg-yellow-50 cursor-pointer text-sm font-semibold text-gray-700 transition-colors flex items-center justify-between"
+                  >
+                    {{ b.nama_bahan }}
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">{{ b.satuan }}</span>
+                  </li>
+                  <li v-if="getFilteredBahan(d._search).length === 0" class="p-4 text-sm text-gray-400 italic text-center">Bahan tidak ditemukan.</li>
+                </ul>
               </div>
             </div>
             

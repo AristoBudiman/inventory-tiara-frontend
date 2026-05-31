@@ -9,8 +9,13 @@ const formResep = ref({ ID: null, nama_resep: '', target_gramasi: 0, bahan_detai
 const fetchBahan = async () => { const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` }}); if (res.ok) listBahan.value = await res.json() }
 const fetchResep = async () => { const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resep`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` }}); if (res.ok) listResep.value = await res.json() }
 
-const tambahBarisBahan = () => formResep.value.bahan_detail.push({ bahan_id: '', kebutuhan: 0 })
+const tambahBarisBahan = () => formResep.value.bahan_detail.push({ bahan_id: '', kebutuhan: 0, _search: '', _isOpen: false })
 const hapusBarisBahan = (idx) => formResep.value.bahan_detail.splice(idx, 1)
+
+const getFilteredBahan = (query) => {
+  if (!query) return listBahan.value
+  return listBahan.value.filter(b => b.nama_bahan.toLowerCase().includes(query.toLowerCase()))
+}
 
 const simpanResep = async () => {
   if (formResep.value.bahan_detail.length === 0) return alert('Resep minimal butuh 1 bahan!')
@@ -23,9 +28,9 @@ const simpanResep = async () => {
   resetForm(); fetchResep()
 }
 
-const editResep = (r) => { isEdit.value = true; formResep.value = { ID: r.ID, nama_resep: r.nama_resep, target_gramasi: r.target_gramasi, bahan_detail: r.bahan_detail.map(d => ({ bahan_id: d.bahan_id, kebutuhan: d.kebutuhan })) } }
+const editResep = (r) => { isEdit.value = true; formResep.value = { ID: r.ID, nama_resep: r.nama_resep, target_gramasi: r.target_gramasi, bahan_detail: r.bahan_detail.map(d => ({ bahan_id: d.bahan_id, kebutuhan: d.kebutuhan, _search: d.bahan?.nama_bahan || '', _isOpen: false })) } }
 const hapusResep = async (id) => { if(confirm('Buang resep ini?')) { await fetch(`${import.meta.env.VITE_API_URL}/api/resep/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` } }); fetchResep() } }
-const resetForm = () => { isEdit.value = false; formResep.value = { ID: null, nama_resep: '', target_gramasi: 0, bahan_detail: [{ bahan_id: '', kebutuhan: 0 }] } }
+const resetForm = () => { isEdit.value = false; formResep.value = { ID: null, nama_resep: '', target_gramasi: 0, bahan_detail: [{ bahan_id: '', kebutuhan: 0, _search: '', _isOpen: false }] } }
 
 onMounted(() => { fetchBahan(); fetchResep() })
 </script>
@@ -42,12 +47,12 @@ onMounted(() => { fetchBahan(); fetchResep() })
       
       <!-- KIRI: FORM BUILDER -->
       <div class="lg:col-span-4">
-        <div class="bg-white rounded-xl shadow-md border border-orange-200 overflow-hidden sticky top-24">
-          <div class="bg-orange-500 p-4 text-white flex items-center gap-2">
+        <div class="bg-white rounded-xl shadow-md border border-orange-200 overflow-visible">
+          <div class="bg-orange-500 rounded-t-xl p-4 text-white flex items-center gap-2">
             <h2 class="text-lg font-bold">{{ isEdit ? '✏️ Update Komposisi' : '✨ Racik Adonan Baru' }}</h2>
           </div>
           
-          <form @submit.prevent="simpanResep" class="p-5 space-y-4 bg-orange-50/30">
+          <form @submit.prevent="simpanResep" class="p-5 space-y-4 bg-orange-50/30 rounded-b-xl">
             <div>
               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Nama Resep</label>
               <input v-model="formResep.nama_resep" type="text" required placeholder="Contoh: Roti Manis Dasar" class="w-full border-2 border-gray-300 p-2.5 rounded-lg focus:border-orange-500 font-bold text-gray-800 outline-none bg-white transition-colors">
@@ -67,14 +72,37 @@ onMounted(() => { fetchBahan(); fetchResep() })
                   <button type="button" @click="tambahBarisBahan" class="text-xs font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded transition-colors">+ Tambah</button>
               </div>
               
-              <div class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                <div v-for="(b, idx) in formResep.bahan_detail" :key="idx" class="flex gap-2 items-center bg-white p-2 rounded-lg border border-gray-300 shadow-sm">
-                  <select v-model="b.bahan_id" required class="flex-1 text-sm border-none bg-transparent font-bold outline-none text-gray-800 cursor-pointer">
-                    <option value="" disabled>Pilih Bahan...</option>
-                    <option v-for="mb in listBahan" :key="mb.ID" :value="mb.ID">{{ mb.nama_bahan }}</option>
-                  </select>
-                  <input v-model.number="b.kebutuhan" type="number" required min="0.01" step="any" placeholder="Qty" class="w-20 bg-gray-50 border border-gray-300 rounded p-1.5 text-center font-bold text-sm text-gray-800 outline-none focus:border-orange-500">
-                  <button type="button" @click="hapusBarisBahan(idx)" class="text-red-500 hover:text-red-700 p-1 font-bold text-2xl leading-none">×</button>
+              <div class="space-y-2 pr-2">
+                <div v-for="(b, idx) in formResep.bahan_detail" :key="idx" class="bg-white p-2 rounded-lg border border-gray-300 shadow-sm relative">
+                  
+                  <div class="flex gap-2 items-center">
+                    <div class="flex-1 relative">
+                      <input 
+                        type="text" 
+                        v-model="b._search" 
+                        @focus="b._isOpen = true" 
+                        placeholder="Cari bahan..." 
+                        class="w-full text-sm border-none bg-transparent font-bold outline-none text-gray-800"
+                      >
+                    </div>
+
+                    <input v-model.number="b.kebutuhan" type="number" required min="0.01" step="any" placeholder="Qty" class="w-20 bg-gray-50 border border-gray-300 rounded p-1.5 text-center font-bold text-sm text-gray-800 outline-none focus:border-orange-500">
+                    <button type="button" @click="hapusBarisBahan(idx)" class="text-red-500 hover:text-red-700 p-1 font-bold text-2xl leading-none">×</button>
+                  </div>
+                  
+                  <div v-if="b._isOpen" @click="b._isOpen = false" class="fixed inset-0 z-40 cursor-default"></div>
+                  <ul v-if="b._isOpen" class="w-full bg-white border border-gray-200 shadow-inner max-h-48 overflow-y-auto rounded-xl mt-2 custom-scrollbar overflow-hidden divide-y divide-gray-100 relative z-50">
+                    <li 
+                      v-for="mb in getFilteredBahan(b._search)" 
+                      :key="mb.ID" 
+                      @mousedown.prevent="b.bahan_id = mb.ID; b._search = mb.nama_bahan; b._isOpen = false"
+                      class="px-4 py-3 hover:bg-orange-50 cursor-pointer text-sm font-semibold text-gray-700 transition-colors flex items-center justify-between"
+                    >
+                      {{ mb.nama_bahan }}
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">{{ mb.satuan }}</span>
+                    </li>
+                    <li v-if="getFilteredBahan(b._search).length === 0" class="p-4 text-sm text-gray-400 italic text-center">Bahan tidak ditemukan.</li>
+                  </ul>
                 </div>
               </div>
             </div>

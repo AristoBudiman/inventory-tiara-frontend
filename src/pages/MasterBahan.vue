@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import draggable from 'vuedraggable'
 
 const listBahan = ref([])
@@ -164,6 +164,13 @@ const simpanPembelian = async () => {
 // ==========================================
 
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
+
+watch([showModalBahan, showModalBeli], ([isOpenBahan, isOpenBeli]) => {
+  if (isOpenBahan || isOpenBeli) document.body.style.overflow = 'hidden'
+  else document.body.style.overflow = ''
+})
+onUnmounted(() => { document.body.style.overflow = '' })
+
 onMounted(fetchBahan)
 </script>
 
