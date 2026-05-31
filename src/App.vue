@@ -78,33 +78,33 @@ const logout = () => {
                h-[calc(100vh-4rem)] md:h-auto overflow-y-auto md:overflow-visible pb-24 md:pb-0"
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex flex-col md:flex-row md:overflow-x-auto hide-scrollbar gap-6 md:gap-8 py-6 md:py-3">
+          <div class="flex flex-col md:flex-row md:overflow-x-auto hide-scrollbar gap-6 md:gap-3 py-6 md:py-3 justify-center md:justify-start">
 
-            <div class="flex flex-col gap-3 md:gap-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-5 md:pb-0 md:pr-8 shrink-0">
+            <div class="flex flex-col gap-3 md:gap-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-5 md:pb-0 md:pr-4 shrink-0">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1">Master Data</span>
-              <div class="flex flex-col md:flex-row gap-2">
-                <router-link to="/bahan" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">📦 Bahan</router-link>
-                <router-link to="/resep" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🥣 Resep</router-link>
-                <router-link to="/komposit" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🧈 Komposit</router-link>
-                <router-link to="/barang" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🍞 Produk</router-link>
+              <div class="flex flex-col md:flex-row gap-1.5">
+                <router-link to="/bahan" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">📦 Bahan</router-link>
+                <router-link to="/resep" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🥣 Resep</router-link>
+                <router-link to="/komposit" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🧈 Komposit</router-link>
+                <router-link to="/barang" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🍞 Produk</router-link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-3 md:gap-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-5 md:pb-0 md:pr-8 shrink-0">
+            <div class="flex flex-col gap-3 md:gap-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-5 md:pb-0 md:pr-4 shrink-0">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1">Operasional Dapur</span>
-              <div class="flex flex-col md:flex-row gap-2">
-                <router-link to="/konversi" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌤️ Konversi</router-link>
-                <router-link to="/input-produksi" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">👨‍🍳 Dapur</router-link>
-                <router-link to="/tutup-buku" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌙 Tutup Buku</router-link>
+              <div class="flex flex-col md:flex-row gap-1.5">
+                <router-link to="/konversi" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌤️ Konversi</router-link>
+                <router-link to="/input-produksi" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">👨‍🍳 Dapur</router-link>
+                <router-link to="/tutup-buku" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-yellow-50 hover:text-yellow-700" exact-active-class="!bg-yellow-50 !text-yellow-700 !border-yellow-300 shadow-sm">🌙 Tutup Buku</router-link>
               </div>
             </div>
 
             <div class="flex flex-col gap-3 md:gap-1.5 shrink-0">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1">Gudang & Laporan</span>
-              <div class="flex flex-col md:flex-row gap-2">
-                <router-link to="/opname" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">⚖️ Opname</router-link>
-                <router-link to="/laporan-pengeluaran" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">💸 Pengeluaran</router-link>
-                <router-link to="/sampah-inventory" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">🗑️ Sampah</router-link>
+              <div class="flex flex-col md:flex-row gap-1.5">
+                <router-link to="/opname" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">⚖️ Opname</router-link>
+                <router-link to="/laporan-pengeluaran" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">💸 Pengeluaran</router-link>
+                <router-link to="/sampah-inventory" class="px-2.5 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700" exact-active-class="!bg-rose-50 !text-rose-700 !border-rose-300 shadow-sm">🗑️ Sampah</router-link>
               </div>
             </div>
 
