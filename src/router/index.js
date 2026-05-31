@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../pages/Login.vue'
 import MasterBahan from '../pages/MasterBahan.vue'
 import MasterResep from '../pages/MasterResep.vue'
+import MasterKomposit from '../pages/MasterKomposit.vue'
 import MasterBarang from '../pages/MasterBarang.vue'
 import InputProduksi from '../pages/InputProduksi.vue'
 import LaporanPengeluaran from '../pages/LaporanPengeluaran.vue'
@@ -16,6 +17,7 @@ const routes = [
   { path: '/login', component: Login },
   { path: '/bahan', component: MasterBahan },
   { path: '/resep', component: MasterResep },
+  { path: '/komposit', component: MasterKomposit },
   { path: '/barang', component: MasterBarang },
   { path: '/input-produksi', component: InputProduksi },
   { path: '/laporan-pengeluaran', component: LaporanPengeluaran },

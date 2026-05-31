@@ -85,6 +85,7 @@ const logout = () => {
               <div class="flex flex-col md:flex-row gap-2">
                 <router-link to="/bahan" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">📦 Bahan</router-link>
                 <router-link to="/resep" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🥣 Resep</router-link>
+                <router-link to="/komposit" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🧈 Komposit</router-link>
                 <router-link to="/barang" class="px-4 py-3 md:py-2 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" exact-active-class="!bg-blue-50 !text-blue-700 !border-blue-200 shadow-sm">🍞 Produk</router-link>
               </div>
             </div>

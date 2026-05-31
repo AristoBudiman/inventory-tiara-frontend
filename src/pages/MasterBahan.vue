@@ -280,141 +280,178 @@ onMounted(fetchBahan)
       </div>
     </div>
 
-<div v-if="showModalBeli" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
-      <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl border-t-8 border-green-500 max-h-[95vh] overflow-y-auto">
+<div v-if="showModalBeli" class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 flex justify-center items-center z-50 p-4 transition-opacity">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in ring-1 ring-gray-200">
         
-        <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-          <div>
-            <h2 class="text-2xl font-black text-gray-800 tracking-tight">🛒 Catat Struk Belanja</h2>
-            <p class="text-sm font-bold text-gray-500">Masukkan beberapa bahan sekaligus dalam satu nota pembayaran.</p>
-          </div>
-          <button @click="showModalBeli = false" class="text-gray-400 hover:text-red-500 font-bold text-xl">&times;</button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <div>
-            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Tanggal Nota</label>
-            <input type="date" v-model="formBeli.tanggal" required class="w-full border border-gray-300 rounded p-2 focus:border-green-500 font-bold outline-none text-gray-700">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Keterangan / Supplier</label>
-            <input type="text" v-model="formBeli.keterangan" placeholder="Contoh: Beli di Lotte Mart" class="w-full border border-gray-300 rounded p-2 focus:border-green-500 font-medium outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 uppercase mb-2">Status Pembayaran</label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" v-model="formBeli.is_lunas" :value="true" class="w-4 h-4 text-green-600">
-                <span class="text-sm font-bold text-green-700">Lunas (Potong Kas)</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" v-model="formBeli.is_lunas" :value="false" class="w-4 h-4 text-red-600">
-                <span class="text-sm font-bold text-red-700">Hutang (Tempo)</span>
-              </label>
+        <!-- Header -->
+        <div class="bg-linear-to-r from-green-50/80 to-emerald-50/80 px-6 py-5 flex justify-between items-center border-b border-gray-100 shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-green-100 rounded-xl text-green-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-gray-800 tracking-tight">Catat Struk Belanja</h2>
+              <p class="text-xs font-medium text-gray-500 mt-0.5">Masukkan beberapa bahan sekaligus dalam satu nota pembayaran.</p>
             </div>
           </div>
+          <button @click="showModalBeli = false" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
 
-        <div class="bg-green-50/50 p-4 rounded-lg border border-green-200 mb-6">
-          <label class="block text-xs font-black text-green-800 uppercase mb-3">➕ Tambah Item Ke Keranjang</label>
-          <div class="flex flex-col md:flex-row gap-3 items-end mb-3">
-            
-            <div class="flex-1">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Cari & Pilih Bahan</label>
-              <div class="relative w-full">
-                
-                <input 
-                  type="text" 
-                  v-model="searchBahan" 
-                  @focus="isDropdownOpen = true" 
-                  placeholder="Ketik nama bahan..." 
-                  class="relative z-101 w-full border border-gray-300 rounded p-2.5 outline-none font-bold text-gray-700 focus:border-green-500 bg-white"
-                >
-
-                <div 
-                  v-if="isDropdownOpen" 
-                  @click="isDropdownOpen = false" 
-                  class="fixed inset-0 z-101 cursor-default"
-                ></div>
-
-                <ul v-if="isDropdownOpen" class="absolute z-101 w-full bg-white border border-gray-300 shadow-xl max-h-56 overflow-y-auto rounded-b mt-1 custom-scrollbar">
-                  <li class="sticky top-0 bg-gray-100 p-2 border-b border-gray-200 flex justify-between items-center">
-                     <span class="text-[10px] font-black text-gray-500 uppercase">Daftar Bahan</span>
-                     <button @click.prevent="isDropdownOpen = false" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 rounded">Tutup ✖</button>
-                  </li>
-                  <li 
-                    v-for="b in filteredBahan" 
-                    :key="b.ID" 
-                    @mousedown.prevent="pilihBahan(b)"
-                    class="p-2.5 hover:bg-green-100 cursor-pointer text-sm font-bold text-gray-800 border-b border-gray-100 last:border-b-0 transition-colors"
-                  >
-                    {{ b.nama_bahan }} <span class="text-xs text-gray-400 font-normal ml-1">({{ b.satuan }})</span>
-                  </li>
-                  <li v-if="filteredBahan.length === 0" class="p-3 text-sm text-gray-400 italic text-center">
-                    Bahan tidak ditemukan.
-                  </li>
-                </ul>
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto custom-scrollbar bg-gray-50/30 flex-1 space-y-6">
+          
+          <!-- Nota Info -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Tanggal Nota</label>
+              <input type="date" v-model="formBeli.tanggal" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-semibold text-gray-700 shadow-sm transition-all outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Keterangan / Supplier</label>
+              <input type="text" v-model="formBeli.keterangan" placeholder="Contoh: Beli di Indomaret" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-medium text-gray-700 shadow-sm transition-all outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Status Pembayaran</label>
+              <div class="flex gap-3 h-10.5">
+                <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors has-checked:border-green-500 has-checked:bg-green-50 has-checked:ring-1 has-checked:ring-green-500">
+                  <input type="radio" v-model="formBeli.is_lunas" :value="true" class="sr-only">
+                  <span class="w-3 h-3 rounded-full border-2 border-gray-300" :class="{ 'border-green-500 bg-green-500': formBeli.is_lunas }"></span>
+                  <span class="text-xs font-bold" :class="formBeli.is_lunas ? 'text-green-700' : 'text-gray-600'">Lunas</span>
+                </label>
+                <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors has-checked:border-red-500 has-checked:bg-red-50 has-checked:ring-1 has-checked:ring-red-500">
+                  <input type="radio" v-model="formBeli.is_lunas" :value="false" class="sr-only">
+                  <span class="w-3 h-3 rounded-full border-2 border-gray-300" :class="{ 'border-red-500 bg-red-500': !formBeli.is_lunas }"></span>
+                  <span class="text-xs font-bold" :class="!formBeli.is_lunas ? 'text-red-700' : 'text-gray-600'">Hutang</span>
+                </label>
               </div>
             </div>
-
-            <div class="w-full md:w-32">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty Masuk</label>
-              <input type="number" v-model.number="tempBeli.qty" min="0" step="any" class="w-full border border-gray-300 rounded p-2.5 font-black outline-none text-center">
-            </div>
-
-            <div class="w-full md:w-48 relative">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total Harga Beli (Rp)</label>
-              <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" class="w-full border border-gray-300 rounded p-2.5 font-black text-red-700 outline-none">
-              <p v-if="tempHPP > 0" class="absolute -bottom-4 left-0 text-[10px] font-black text-blue-600 whitespace-nowrap">
-                💡 HPP: Rp {{ formatRp(tempHPP) }} / satuan
-              </p>
-            </div>
-
-            <button @click="tambahKeKeranjang" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-5 py-2.5 rounded shadow transition-all active:scale-95 w-full md:w-auto h-full">
-              Tambah
-            </button>
           </div>
+
+          <!-- Add to Cart Form -->
+          <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm relative overflow-visible">
+            <div class="absolute top-0 left-0 w-1 h-full bg-green-500 rounded-l-2xl"></div>
+            <label class="block text-[11px] font-bold text-gray-800 uppercase tracking-wider mb-3 ml-2">Tambah Item Baru</label>
+            <div class="flex flex-col md:flex-row gap-4 items-end ml-2">
+              
+              <div class="flex-1 relative">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Cari & Pilih Bahan</label>
+                <div class="relative w-full">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    v-model="searchBahan" 
+                    @focus="isDropdownOpen = true" 
+                    placeholder="Ketik nama bahan..." 
+                    class="relative z-50 w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-semibold text-gray-700 shadow-inner transition-all outline-none"
+                  >
+
+                  <div v-if="isDropdownOpen" @click="isDropdownOpen = false" class="fixed inset-0 z-40 cursor-default"></div>
+
+                  <ul v-if="isDropdownOpen" class="absolute z-50 w-full bg-white border border-gray-200 shadow-2xl max-h-56 overflow-y-auto rounded-xl mt-2 custom-scrollbar overflow-hidden divide-y divide-gray-100">
+                    <li class="sticky top-0 bg-gray-50/95 backdrop-blur-sm p-2 flex justify-between items-center z-10">
+                       <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-2">Daftar Bahan</span>
+                       <button @click.prevent="isDropdownOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 px-2.5 py-1 rounded-lg text-xs font-semibold shadow-sm border border-gray-200 transition-colors">Tutup</button>
+                    </li>
+                    <li 
+                      v-for="b in filteredBahan" 
+                      :key="b.ID" 
+                      @mousedown.prevent="pilihBahan(b)"
+                      class="px-4 py-3 hover:bg-green-50 cursor-pointer text-sm font-semibold text-gray-700 transition-colors flex items-center justify-between group"
+                    >
+                      {{ b.nama_bahan }} 
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500 group-hover:bg-green-100 group-hover:text-green-700 transition-colors">{{ b.satuan }}</span>
+                    </li>
+                    <li v-if="filteredBahan.length === 0" class="p-4 text-sm text-gray-400 italic text-center bg-gray-50">
+                      Bahan tidak ditemukan.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="w-full md:w-28">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Qty</label>
+                <input type="number" v-model.number="tempBeli.qty" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-center text-gray-700 shadow-inner transition-all outline-none">
+              </div>
+
+              <div class="w-full md:w-48 relative">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Total Harga (Rp)</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-xs font-bold text-gray-400">Rp</span>
+                  </div>
+                  <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-red-600 shadow-inner transition-all outline-none">
+                </div>
+                <div v-if="tempHPP > 0" class="absolute -bottom-6 left-0 w-full text-center">
+                   <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-1">HPP: Rp {{ formatRp(tempHPP) }}/satuan</span>
+                </div>
+              </div>
+
+              <button @click="tambahKeKeranjang" type="button" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 w-full md:w-auto h-10.5 flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Tambah
+              </button>
+            </div>
+          </div>
+
+          <!-- Cart Table -->
+          <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col mt-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50/80 backdrop-blur-sm border-b border-gray-100 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+                  <tr>
+                    <th class="px-5 py-3.5">Item Bahan</th>
+                    <th class="px-5 py-3.5 text-center">Qty</th>
+                    <th class="px-5 py-3.5 text-right">Harga Satuan</th>
+                    <th class="px-5 py-3.5 text-right">Subtotal</th>
+                    <th class="px-5 py-3.5 text-center w-16">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                  <tr v-for="(item, index) in formBeli.details" :key="index" class="hover:bg-gray-50/50 transition-colors group">
+                    <td class="px-5 py-4 font-semibold text-gray-800">{{ item.nama_bahan }}</td>
+                    <td class="px-5 py-4 text-center">
+                      <span class="font-black text-gray-800 text-base">{{ item.qty }}</span> 
+                      <span class="text-[10px] font-bold text-gray-400 ml-1">{{ item.satuan }}</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-medium text-gray-500">Rp {{ formatRp(item.harga_beli_satuan) }}</td>
+                    <td class="px-5 py-4 text-right font-black text-red-600 text-base">Rp {{ formatRp(item.subtotal) }}</td>
+                    <td class="px-5 py-4 text-center">
+                      <button @click="hapusDariKeranjang(index)" class="text-gray-300 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="formBeli.details.length === 0">
+                    <td colspan="5" class="px-5 py-10 text-center">
+                      <div class="flex flex-col items-center justify-center text-gray-400">
+                        <svg class="w-10 h-10 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="text-sm font-medium">Keranjang kosong, silakan tambah item</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Summary Footer -->
+            <div class="bg-linear-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Grand Total</span>
+              <span class="text-2xl font-black text-green-400 tracking-tight">Rp {{ formatRp(grandTotalBelanja) }}</span>
+            </div>
+          </div>
+
         </div>
 
-        <div class="border border-gray-200 rounded-lg overflow-hidden mb-6">
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-100 border-b border-gray-200 text-xs uppercase font-black text-gray-600">
-              <tr>
-                <th class="p-3">Nama Bahan</th>
-                <th class="p-3 text-center">Qty Masuk</th>
-                <th class="p-3 text-right">Harga / Satuan</th>
-                <th class="p-3 text-right">Subtotal Biaya</th>
-                <th class="p-3 text-center w-16">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="(item, index) in formBeli.details" :key="index" class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-gray-800">{{ item.nama_bahan }}</td>
-                <td class="p-3 text-center font-black text-blue-700">{{ item.qty }} <span class="text-[10px] font-bold text-gray-500">{{ item.satuan }}</span></td>
-                <td class="p-3 text-right font-medium text-gray-600">Rp {{ formatRp(item.harga_beli_satuan) }}</td>
-                <td class="p-3 text-right font-black text-red-700">Rp {{ formatRp(item.subtotal) }}</td>
-                <td class="p-3 text-center">
-                  <button @click="hapusDariKeranjang(index)" class="text-red-500 hover:text-red-700 font-bold p-1 rounded hover:bg-red-50">❌</button>
-                </td>
-              </tr>
-              <tr v-if="formBeli.details.length === 0">
-                <td colspan="5" class="p-6 text-center text-gray-400 font-bold italic">Keranjang masih kosong. Tambahkan item di atas.</td>
-              </tr>
-            </tbody>
-            <tfoot class="bg-gray-800 text-white">
-              <tr>
-                <td colspan="3" class="p-3 text-right font-black uppercase tracking-wider text-xs">Grand Total:</td>
-                <td class="p-3 text-right font-black text-lg text-green-400">Rp {{ formatRp(grandTotalBelanja) }}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button type="button" @click="showModalBeli = false" class="px-6 py-3 font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 rounded shadow-sm transition-colors">Batal</button>
-          <button @click="simpanPembelian" type="button" class="bg-green-600 text-white px-8 py-3 rounded font-black hover:bg-green-700 shadow-md transition-all active:scale-95 text-lg">
-            Simpan Struk Belanja
+        <!-- Footer Actions -->
+        <div class="bg-white px-6 py-4 flex justify-end gap-3 border-t border-gray-100 shrink-0">
+          <button type="button" @click="showModalBeli = false" class="px-6 py-2.5 font-bold text-gray-600 hover:text-gray-800 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-colors">Batalkan</button>
+          <button @click="simpanPembelian" type="button" class="bg-gray-900 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-gray-800 shadow-md transition-all active:scale-95 flex items-center gap-2">
+            <span>Simpan Pembelian</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
           </button>
         </div>
       </div>
