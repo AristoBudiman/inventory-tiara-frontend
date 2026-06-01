@@ -11,6 +11,7 @@ import SampahInventory from '../pages/SampahInventory.vue'
 import KonversiPagi from '../pages/Konversi.vue'
 import StockOpname from '../pages/StockOpname.vue'
 import TutupBuku from '../pages/TutupBuku.vue'
+import PecahBarang from '../pages/PecahBarang.vue'
 
 const routes = [
   { path: '/', redirect: '/bahan' }, 
@@ -24,6 +25,7 @@ const routes = [
   { path: '/konversi', component: KonversiPagi },
   { path: '/opname', component: StockOpname },
   { path: '/tutup-buku', component: TutupBuku },
+  { path: '/pecah-barang', component: PecahBarang },
   { path: '/sampah-inventory', component: SampahInventory },
 ]
 
