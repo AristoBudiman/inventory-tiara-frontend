@@ -162,7 +162,7 @@ onMounted(() => { fetchBahan(); fetchResep() })
             </div>
             
             <div class="p-4 flex-1 bg-white">
-              <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
                  <div v-for="bd in r.bahan_detail" :key="bd.ID" class="flex justify-between items-baseline border-b border-dashed border-gray-200 pb-1">
                      <span class="text-xs font-bold text-gray-600 truncate pr-2">{{ bd.bahan.nama_bahan }}</span>
                      <span class="text-xs font-black text-gray-800 shrink-0">{{ bd.kebutuhan }} <span class="text-[9px] text-gray-500 font-bold uppercase">{{ bd.bahan.satuan }}</span></span>

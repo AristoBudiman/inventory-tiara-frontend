@@ -337,7 +337,7 @@ onMounted(fetchMasterData)
                   <th class="p-4 w-16 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Urutan</th>
                   <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Nama Barang</th>
                   <th class="p-4 text-right text-[10px] font-black text-gray-600 uppercase tracking-wider whitespace-nowrap">Harga Jual</th>
-                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider pl-8 whitespace-nowrap">Struktur Resep, Komposit & Kemasan</th>
+                  <th class="p-4 text-[10px] font-black text-gray-600 uppercase tracking-wider pl-8 min-w-[300px]">Struktur Resep, Komposit & Kemasan</th>
                   <th class="p-4 text-center text-[10px] font-black text-gray-600 uppercase tracking-wider w-40 whitespace-nowrap">Aksi</th>
               </tr>
           </thead>
@@ -361,8 +361,8 @@ onMounted(fetchMasterData)
                     <span class="font-black text-blue-700 text-base">Rp {{ formatRp(b.HargaDefault) }}</span>
                   </td>
                   
-                  <td class="p-4 pl-8 whitespace-nowrap">
-                    <div class="flex flex-col gap-2">
+                  <td class="p-4 pl-8">
+                    <div class="flex flex-col gap-2 max-w-md max-h-32 overflow-y-auto custom-scrollbar pr-2">
                       
                       <div v-if="b.resep_id" class="flex items-center gap-2">
                          <span class="text-orange-500 text-sm">🥣</span>

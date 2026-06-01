@@ -139,7 +139,7 @@ onMounted(fetchMasterData)
           <tr v-for="k in listKomposit" :key="k.id" class="hover:bg-blue-50/30 transition-colors">
             <td class="p-4 font-black text-gray-800 text-base">{{ k.nama_komposit }}</td>
             <td class="p-4">
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-wrap gap-2 max-w-md max-h-24 overflow-y-auto custom-scrollbar pr-2">
                 <span v-for="d in k.details" :key="d.id" class="bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded">
                   {{ d.bahan?.nama_bahan }} <span class="text-yellow-600 ml-1 font-black">(Rasio: {{ d.rasio }})</span>
                 </span>
