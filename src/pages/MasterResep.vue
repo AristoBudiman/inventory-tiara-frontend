@@ -24,8 +24,32 @@ const simpanResep = async () => {
 
   const method = isEdit.value ? 'PUT' : 'POST'
   const url = isEdit.value ? `${import.meta.env.VITE_API_URL}/api/resep/${formResep.value.ID}` : `${import.meta.env.VITE_API_URL}/api/resep`
-  await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` }, body: JSON.stringify(formResep.value) })
-  resetForm(); fetchResep()
+  
+  // Bersihkan properti state UI (_search, _isOpen) sebelum dikirim ke server
+  const payload = {
+    ...formResep.value,
+    bahan_detail: formResep.value.bahan_detail.map(b => ({
+      bahan_id: b.bahan_id,
+      kebutuhan: b.kebutuhan
+    }))
+  }
+
+  try {
+    const res = await fetch(url, { 
+      method, 
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` }, 
+      body: JSON.stringify(payload) 
+    })
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return alert('Gagal menyimpan resep: ' + (err.message || res.statusText))
+    }
+
+    resetForm(); fetchResep()
+  } catch (error) {
+    alert('Terjadi kesalahan jaringan: ' + error.message)
+  }
 }
 
 const editResep = (r) => { isEdit.value = true; formResep.value = { ID: r.ID, nama_resep: r.nama_resep, target_gramasi: r.target_gramasi, bahan_detail: r.bahan_detail.map(d => ({ bahan_id: d.bahan_id, kebutuhan: d.kebutuhan, _search: d.bahan?.nama_bahan || '', _isOpen: false })) } }
