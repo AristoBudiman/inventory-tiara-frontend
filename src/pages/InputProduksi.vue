@@ -260,7 +260,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <div class="w-20">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 text-center">Pcs</label>
-                <input v-model.number="formMatang.qty_matang" type="number" required min="1" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-emerald-500 font-black text-center outline-none text-emerald-600 bg-white">
+                <input v-model.number="formMatang.qty_matang" type="number" required min="0.01" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-emerald-500 font-black text-center outline-none text-emerald-600 bg-white">
               </div>
               <button type="submit" class="bg-white border-2 border-emerald-200 hover:border-emerald-500 text-emerald-600 font-black p-2.5 rounded-lg shadow-sm transition-colors text-xl leading-none px-4">+</button>
             </div>
@@ -325,7 +325,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <div class="w-20">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 text-center">Pcs</label>
-                <input v-model.number="formRusak.qty" type="number" required min="1" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-red-500 font-black text-center outline-none text-red-600 bg-white">
+                <input v-model.number="formRusak.qty" type="number" required min="0.01" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-red-500 font-black text-center outline-none text-red-600 bg-white">
               </div>
             </div>
             <div class="flex gap-3 items-end">
