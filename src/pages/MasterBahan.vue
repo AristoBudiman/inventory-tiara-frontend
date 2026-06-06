@@ -74,6 +74,7 @@ const hapusBahan = async (id) => {
 const showModalBeli = ref(false)
 const formBeli = ref({ tanggal: new Date().toISOString().split('T')[0], keterangan: '', is_lunas: true, details: [] })
 const tempBeli = ref({ bahan_id: '', qty: '', subtotal: '' }) // Form input sementara
+const tempSatuanPilihan = ref(null)
 
 // STATE BARU KHUSUS UNTUK DROPDOWN PENCARIAN
 const searchBahan = ref('')
@@ -86,9 +87,24 @@ const filteredBahan = computed(() => {
 
 const pilihBahan = (b) => {
   tempBeli.value.bahan_id = b.ID
-  searchBahan.value = b.nama_bahan // Tampilkan nama bahan di input
+  tempSatuanPilihan.value = { nama: b.satuan, nilai: 1, is_dasar: true }
+  searchBahan.value = b.nama_bahan
   isDropdownOpen.value = false
 }
+
+const opsiSatuanAktif = computed(() => {
+  if (!tempBeli.value.bahan_id) return []
+  const bahan = listBahan.value.find(b => b.ID === tempBeli.value.bahan_id)
+  if (!bahan) return []
+  
+  const opsi = [{ nama: bahan.satuan, nilai: 1, is_dasar: true }]
+  if (bahan.konversi) {
+    bahan.konversi.forEach(k => {
+      opsi.push({ nama: k.nama_satuan, nilai: k.nilai_konversi, is_dasar: false })
+    })
+  }
+  return opsi
+})
 
 // Buka modal belanja (Bisa dari tombol atas, atau dari tombol keranjang di baris tabel)
 const bukaModalBeli = (b = null) => { 
@@ -97,6 +113,7 @@ const bukaModalBeli = (b = null) => {
   searchBahan.value = ''
   if (b && b.ID) {
     tempBeli.value.bahan_id = b.ID 
+    tempSatuanPilihan.value = { nama: b.satuan, nilai: 1, is_dasar: true }
     searchBahan.value = b.nama_bahan
   } 
   showModalBeli.value = true 
@@ -108,13 +125,21 @@ const tambahKeKeranjang = () => {
   }
   const bahan = listBahan.value.find(x => x.ID === tempBeli.value.bahan_id)
   
+  const qtyInput = parseFloat(tempBeli.value.qty)
+  const nilaiKonversi = tempSatuanPilihan.value.nilai
+  const qtyDasar = qtyInput * nilaiKonversi
+
   formBeli.value.details.push({
     bahan_id: tempBeli.value.bahan_id,
     nama_bahan: bahan.nama_bahan,
     satuan: bahan.satuan,
-    qty: tempBeli.value.qty,
+    qty: qtyDasar, // QTY dikirim ke backend selalu dalam satuan dasar!
     subtotal: tempBeli.value.subtotal,
-    harga_beli_satuan: tempBeli.value.subtotal / tempBeli.value.qty
+    harga_beli_satuan: tempBeli.value.subtotal / qtyDasar,
+    
+    // UI Info Only
+    qty_input: qtyInput,
+    satuan_input: tempSatuanPilihan.value.nama
   })
   // Kosongkan form input setelah masuk keranjang
   tempBeli.value = { bahan_id: '', qty: '', subtotal: '' }
@@ -127,7 +152,8 @@ const hapusDariKeranjang = (index) => {
 
 const tempHPP = computed(() => {
   if (tempBeli.value.qty > 0 && tempBeli.value.subtotal > 0) {
-    return tempBeli.value.subtotal / tempBeli.value.qty
+    const qtyDasar = tempBeli.value.qty * (tempSatuanPilihan.value?.nilai || 1)
+    return tempBeli.value.subtotal / qtyDasar
   }
   return 0
 })
@@ -165,9 +191,55 @@ const simpanPembelian = async () => {
 
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
 
-// STATE UNTUK POP-UP OPNAME CEPAT
 const showModalOpname = ref(false)
 const formOpname = ref({ ID: null, nama_bahan: '', stok_sistem: 0, stok_fisik: 0, satuan: '', keterangan: '', _original: null })
+
+// STATE UNTUK POP-UP SATUAN KUSTOM
+const showModalSatuan = ref(false)
+const bahanAktif = ref(null)
+const formSatuan = ref({ nama_satuan: '', nilai_konversi: '' })
+
+const bukaModalSatuan = (b) => {
+  bahanAktif.value = b
+  formSatuan.value = { nama_satuan: '', nilai_konversi: '' }
+  showModalSatuan.value = true
+}
+
+const tambahSatuan = async () => {
+  if (!formSatuan.value.nama_satuan || !formSatuan.value.nilai_konversi) return alert("Harap lengkapi data satuan!")
+  const payload = {
+    bahan_id: bahanAktif.value.ID,
+    nama_satuan: formSatuan.value.nama_satuan,
+    nilai_konversi: parseFloat(formSatuan.value.nilai_konversi)
+  }
+  const token = localStorage.getItem('inventory_token')
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/satuan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(payload)
+  })
+  if (res.ok) {
+    formSatuan.value = { nama_satuan: '', nilai_konversi: '' }
+    fetchBahan().then(() => {
+      // Refresh bahanAktif
+      bahanAktif.value = listBahan.value.find(b => b.ID === bahanAktif.value.ID)
+    })
+  } else {
+    alert("Gagal menambah satuan")
+  }
+}
+
+const hapusSatuan = async (id) => {
+  if (confirm("Hapus konversi satuan ini?")) {
+    const token = localStorage.getItem('inventory_token')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/satuan/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
+    if (res.ok) {
+      fetchBahan().then(() => {
+        bahanAktif.value = listBahan.value.find(b => b.ID === bahanAktif.value.ID)
+      })
+    }
+  }
+}
 
 const bukaModalOpname = (b) => {
   formOpname.value = {
@@ -210,8 +282,8 @@ const simpanOpnameCepat = async () => {
   }
 }
 
-watch([showModalBahan, showModalBeli, showModalOpname], ([isOpenBahan, isOpenBeli, isOpenOpname]) => {
-  if (isOpenBahan || isOpenBeli || isOpenOpname) {
+watch([showModalBahan, showModalBeli, showModalOpname, showModalSatuan], ([isOpenBahan, isOpenBeli, isOpenOpname, isOpenSatuan]) => {
+  if (isOpenBahan || isOpenBeli || isOpenOpname || isOpenSatuan) {
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
   } else {
@@ -286,6 +358,7 @@ onMounted(fetchBahan)
 
               <td class="p-4 whitespace-nowrap">
                 <div class="flex justify-center gap-2">
+                  <button @click="bukaModalSatuan(element)" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded font-bold text-xs transition-colors" title="Atur Satuan">Satuan</button>
                   <button @click="bukaModalOpname(element)" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded font-bold text-xs transition-colors" title="Opname Cepat">Opname</button>
                   <button @click="editBahan(element)" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Edit</button>
                   <button @click="hapusBahan(element.ID)" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-bold text-xs transition-colors">Del</button>
@@ -433,21 +506,28 @@ onMounted(fetchBahan)
                 </div>
               </div>
 
-              <div class="w-full md:w-28">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Qty</label>
-                <input type="number" v-model.number="tempBeli.qty" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-center text-gray-700 shadow-inner transition-all outline-none">
+              <div class="w-full md:w-24">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Satuan</label>
+                <select v-model="tempSatuanPilihan" :disabled="!tempBeli.bahan_id" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-bold text-gray-700 shadow-inner transition-all outline-none disabled:opacity-50 text-sm">
+                  <option v-for="o in opsiSatuanAktif" :key="o.nama" :value="o">{{ o.nama }}</option>
+                </select>
               </div>
 
-              <div class="w-full md:w-48 relative">
+              <div class="w-full md:w-20">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Qty</label>
+                <input type="number" v-model.number="tempBeli.qty" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-center text-gray-700 shadow-inner transition-all outline-none text-sm">
+              </div>
+
+              <div class="w-full md:w-40 relative">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Total Harga (Rp)</label>
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                     <span class="text-xs font-bold text-gray-400">Rp</span>
                   </div>
-                  <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-red-600 shadow-inner transition-all outline-none">
+                  <input type="number" v-model.number="tempBeli.subtotal" min="0" step="any" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-3 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-black text-red-600 shadow-inner transition-all outline-none text-sm">
                 </div>
                 <div v-if="tempHPP > 0" class="absolute -bottom-6 left-0 w-full text-center">
-                   <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-1">HPP: Rp {{ formatRp(tempHPP) }}/satuan</span>
+                   <span class="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-1">HPP: Rp {{ formatRp(tempHPP) }} / {{ listBahan.find(x => x.ID === tempBeli.bahan_id)?.satuan || 'satuan' }}</span>
                 </div>
               </div>
 
@@ -466,7 +546,7 @@ onMounted(fetchBahan)
                   <tr>
                     <th class="px-5 py-3.5">Item Bahan</th>
                     <th class="px-5 py-3.5 text-center">Qty</th>
-                    <th class="px-5 py-3.5 text-right">Harga Satuan</th>
+                    <th class="px-5 py-3.5 text-right">Harga Satuan Dasar</th>
                     <th class="px-5 py-3.5 text-right">Subtotal</th>
                     <th class="px-5 py-3.5 text-center w-16">Aksi</th>
                   </tr>
@@ -475,10 +555,13 @@ onMounted(fetchBahan)
                   <tr v-for="(item, index) in formBeli.details" :key="index" class="hover:bg-gray-50/50 transition-colors group">
                     <td class="px-5 py-4 font-semibold text-gray-800">{{ item.nama_bahan }}</td>
                     <td class="px-5 py-4 text-center">
-                      <span class="font-black text-gray-800 text-base">{{ item.qty }}</span> 
-                      <span class="text-[10px] font-bold text-gray-400 ml-1">{{ item.satuan }}</span>
+                      <span class="font-black text-gray-800 text-base">{{ item.qty_input }}</span> 
+                      <span class="text-[10px] font-bold text-gray-400 ml-1">{{ item.satuan_input }}</span>
+                      <div v-if="item.qty_input !== item.qty" class="text-[10px] text-gray-400 font-medium mt-0.5">
+                        = {{ item.qty }} {{ item.satuan }}
+                      </div>
                     </td>
-                    <td class="px-5 py-4 text-right font-medium text-gray-500">Rp {{ formatRp(item.harga_beli_satuan) }}</td>
+                    <td class="px-5 py-4 text-right font-medium text-gray-500">Rp {{ formatRp(item.harga_beli_satuan) }} <span class="text-[10px]">/ {{ item.satuan }}</span></td>
                     <td class="px-5 py-4 text-right font-black text-red-600 text-base">Rp {{ formatRp(item.subtotal) }}</td>
                     <td class="px-5 py-4 text-center">
                       <button @click="hapusDariKeranjang(index)" class="text-gray-300 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
@@ -550,6 +633,58 @@ onMounted(fetchBahan)
             <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-black shadow-md transition-colors">Sesuaikan Stok</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- MODAL ATUR SATUAN -->
+    <div v-if="showModalSatuan" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
+      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg border-t-8 border-indigo-500 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-black text-gray-800">
+            📐 Satuan {{ bahanAktif?.nama_bahan }}
+          </h2>
+          <button @click="showModalSatuan = false" class="text-gray-400 hover:text-red-500 transition-colors font-black text-xl">&times;</button>
+        </div>
+
+        <div class="bg-indigo-50 p-4 rounded-lg mb-6 border border-indigo-100 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-gray-500 font-bold uppercase">Satuan Dasar</p>
+            <p class="font-black text-indigo-900 text-lg">1 {{ bahanAktif?.satuan }}</p>
+          </div>
+          <span class="text-2xl">⚖️</span>
+        </div>
+
+        <div class="space-y-3 mb-6 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+          <div v-for="s in bahanAktif?.konversi" :key="s.id" class="flex items-center justify-between bg-gray-50 border border-gray-200 p-3 rounded-lg">
+            <div class="flex items-center gap-3">
+              <span class="font-bold text-gray-800">1 {{ s.nama_satuan }}</span>
+              <span class="text-xs text-gray-400 font-black">=</span>
+              <span class="font-bold text-indigo-600">{{ s.nilai_konversi }} {{ bahanAktif?.satuan }}</span>
+            </div>
+            <button @click="hapusSatuan(s.id)" class="text-red-500 hover:text-red-700 font-bold text-xs p-2 hover:bg-red-50 rounded transition-colors">Hapus</button>
+          </div>
+          <div v-if="!bahanAktif?.konversi?.length" class="text-center text-sm text-gray-400 italic p-4">
+            Belum ada satuan kustom. (Hanya pakai {{ bahanAktif?.satuan }})
+          </div>
+        </div>
+
+        <form @submit.prevent="tambahSatuan" class="flex gap-2 items-end border-t pt-4">
+          <div class="flex-1">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Satuan</label>
+            <input v-model="formSatuan.nama_satuan" type="text" placeholder="Misal: Sak" required class="w-full border-2 border-gray-300 rounded p-2 focus:border-indigo-500 font-bold outline-none text-gray-800 bg-white text-sm transition-colors">
+          </div>
+          <div class="flex-1 relative">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Setara Dengan</label>
+            <div class="flex items-center border-2 border-gray-300 rounded focus-within:border-indigo-500 bg-white transition-colors">
+              <input v-model.number="formSatuan.nilai_konversi" type="number" min="0.0001" step="any" required class="w-full p-2 font-bold outline-none text-gray-800 bg-transparent text-sm">
+              <span class="text-xs font-bold text-gray-400 pr-3">{{ bahanAktif?.satuan }}</span>
+            </div>
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 h-10 rounded font-bold shadow-md transition-colors text-sm whitespace-nowrap">
+            Tambah
+          </button>
+        </form>
+
       </div>
     </div>
 
