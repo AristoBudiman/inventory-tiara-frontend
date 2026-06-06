@@ -1,6 +1,21 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
+const today = new Date()
+const year = today.getFullYear()
+const month = String(today.getMonth() + 1).padStart(2, '0')
+const day = String(today.getDate()).padStart(2, '0')
+
+// 2 bulan ke belakang
+const twoMonthsAgo = new Date(today)
+twoMonthsAgo.setMonth(today.getMonth() - 2)
+const startYear = twoMonthsAgo.getFullYear()
+const startMonth = String(twoMonthsAgo.getMonth() + 1).padStart(2, '0')
+const startDay = String(twoMonthsAgo.getDate()).padStart(2, '0')
+
+const startDate = ref(`${startYear}-${startMonth}-${startDay}`)
+const endDate = ref(`${year}-${month}-${day}`)
+
 const listBahan = ref([])
 const listOpname = ref([])
 const form = ref({ bahan_id: '', stok_fisik: 0, keterangan: '' })
@@ -48,7 +63,7 @@ const fetchData = async () => {
   
   const [resB, resO] = await Promise.all([
     fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers }),
-    fetch(`${import.meta.env.VITE_API_URL}/api/opname`, { headers })
+    fetch(`${import.meta.env.VITE_API_URL}/api/opname?start=${startDate.value}&end=${endDate.value}`, { headers })
   ])
   if(resB.ok) listBahan.value = await resB.json()
   if(resO.ok) listOpname.value = await resO.json()
@@ -99,6 +114,18 @@ onMounted(fetchData)
     <div class="border-b-2 border-gray-200 pb-4">
       <h1 class="text-3xl font-black text-gray-800 tracking-tight">⚖️ Stock Opname Gudang</h1>
       <p class="text-sm text-gray-500 font-medium mt-1">Sidak fisik bahan baku dan kemasan untuk menyesuaikan selisih sistem.</p>
+    </div>
+
+    <!-- FILTER TANGGAL -->
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-purple-100 flex flex-col md:flex-row items-end gap-5">
+      <div class="flex-1 w-full">
+        <label class="block text-[10px] font-black text-purple-800 uppercase tracking-wider mb-2">Periode Mulai</label>
+        <input type="date" v-model="startDate" @change="fetchData" class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 text-gray-700 bg-gray-50 focus:bg-white transition-colors cursor-pointer">
+      </div>
+      <div class="flex-1 w-full">
+        <label class="block text-[10px] font-black text-purple-800 uppercase tracking-wider mb-2">Periode Sampai</label>
+        <input type="date" v-model="endDate" @change="fetchData" class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 text-gray-700 bg-gray-50 focus:bg-white transition-colors cursor-pointer">
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">

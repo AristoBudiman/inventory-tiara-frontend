@@ -11,11 +11,11 @@ const riwayatMatang = ref([])
 const riwayatRusak = ref([]) // <--- BARU: Histori Rusak
 
 const formMasak = ref({ resep_id: '', jumlah_batch: 1 })
-const formMatang = ref({ barang_id: '', qty_matang: 0 })
+// const formMatang = ref({ barang_id: '', qty_matang: 0 })
 const formRusak = ref({ barang_id: '', qty: 0, keterangan: '' }) // <--- BARU: Form Rusak
 
 const draftMasak = ref([])
-const draftMatang = ref([])
+// const draftMatang = ref([])
 const draftRusak = ref([]) // <--- BARU: Draft Rusak
 const isSubmitting = ref(false)
 
@@ -26,7 +26,12 @@ const fetchMasterData = async () => {
     fetch(`${import.meta.env.VITE_API_URL}/api/barangs`, { headers })
   ])
   if (resResep.ok) listResep.value = await resResep.json() || []
-  if (resBarang.ok) listBarang.value = await resBarang.json() || []
+  if (resBarang.ok) {
+    listBarang.value = await resBarang.json() || []
+    listBarang.value.forEach(b => {
+      inputMatangBanyak.value[b.ID] = 0
+    })
+  }
 }
 
 const fetchRiwayat = async () => {
@@ -63,25 +68,31 @@ const finalisasiMasak = async () => {
   } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
-// LOGIKA MATANG
-const tambahDraftMatang = () => {
-  if (!formMatang.value.barang_id || formMatang.value.qty_matang <= 0) return alert('Input tidak valid!')
-  const barangTerpilih = listBarang.value.find(b => b.ID === formMatang.value.barang_id)
-  draftMatang.value.push({ barang_id: formMatang.value.barang_id, nama_barang: barangTerpilih.NamaBarang, qty_matang: formMatang.value.qty_matang })
-  formMatang.value = { barang_id: '', qty_matang: 0 }
-}
-const hapusDraftMatang = (idx) => draftMatang.value.splice(idx, 1)
+// LOGIKA MATANG MASAL
+const inputMatangBanyak = ref({})
 
-const finalisasiMatang = async () => {
-  if (draftMatang.value.length === 0) return
-  if (!confirm('Eksekusi Matang? Pastikan jumlah fisik sudah benar.')) return
+const finalisasiMatangMasal = async () => {
+  const itemsToSubmit = Object.keys(inputMatangBanyak.value)
+    .filter(id => inputMatangBanyak.value[id] > 0)
+    .map(id => ({ barang_id: parseInt(id), qty_matang: inputMatangBanyak.value[id] }))
+
+  if (itemsToSubmit.length === 0) return alert('Belum ada Qty matang yang diisi!')
+  if (!confirm(`Eksekusi Matang untuk ${itemsToSubmit.length} macam produk?`)) return
+  
   isSubmitting.value = true
   const token = localStorage.getItem('inventory_token')
   try {
-    for (const item of draftMatang.value) {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/matang`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tanggal: filterTanggal.value, barang_id: item.barang_id, qty_matang: item.qty_matang }) })
+    for (const item of itemsToSubmit) {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/matang`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+        body: JSON.stringify({ tanggal: filterTanggal.value, barang_id: item.barang_id, qty_matang: item.qty_matang }) 
+      })
     }
-    draftMatang.value = []; fetchRiwayat()
+    listBarang.value.forEach(b => {
+      inputMatangBanyak.value[b.ID] = 0
+    })
+    fetchRiwayat()
   } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
@@ -249,39 +260,20 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
         </div>
 
         <div class="p-6 border-b border-gray-100 bg-emerald-50/20">
-          <form @submit.prevent="tambahDraftMatang" class="flex flex-col gap-3 mb-6">
-            <div class="flex gap-3 items-end">
-              <div class="flex-1">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Produk Jadi</label>
-                <select v-model="formMatang.barang_id" required class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-emerald-500 font-bold outline-none text-gray-800 cursor-pointer bg-white">
-                  <option value="" disabled>-- Katalog Produk --</option>
-                  <option v-for="b in listBarang" :key="b.ID" :value="b.ID">{{ b.NamaBarang }}</option>
-                </select>
+          
+          <div class="bg-white border-2 border-emerald-200 rounded-xl p-3 mb-4 max-h-72 overflow-y-auto custom-scrollbar shadow-inner">
+            <div v-for="b in listBarang" :key="b.ID" class="flex justify-between items-center border-b border-gray-100 last:border-0 py-2.5">
+              <span class="text-xs font-bold text-gray-700 truncate pr-2">{{ b.NamaBarang }}</span>
+              <div class="w-20 shrink-0">
+                <input v-model.number="inputMatangBanyak[b.ID]" type="number" min="0" step="any" placeholder="0" class="w-full border-2 border-emerald-100 rounded-lg p-1.5 text-center font-black text-emerald-700 outline-none focus:border-emerald-500 transition-colors bg-emerald-50/30">
               </div>
-              <div class="w-20">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 text-center">Pcs</label>
-                <input v-model.number="formMatang.qty_matang" type="number" required min="0.01" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-emerald-500 font-black text-center outline-none text-emerald-600 bg-white">
-              </div>
-              <button type="submit" class="bg-white border-2 border-emerald-200 hover:border-emerald-500 text-emerald-600 font-black p-2.5 rounded-lg shadow-sm transition-colors text-xl leading-none px-4">+</button>
             </div>
-          </form>
-
-          <div class="bg-white border-2 border-dashed border-emerald-200 rounded-xl p-4">
-            <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-3">🛒 Draft Tunggu Eksekusi</h3>
-            <div class="space-y-2 mb-4">
-              <div v-for="(draft, idx) in draftMatang" :key="idx" class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-100 flex justify-between items-center">
-                <p class="font-bold text-gray-800 text-sm truncate pr-2">{{ draft.nama_barang }}</p>
-                <div class="flex items-center gap-3 shrink-0">
-                  <span class="font-black text-emerald-700 text-sm">{{ draft.qty_matang }}<span class="text-[10px] text-emerald-500 ml-1">Pcs</span></span>
-                  <button @click="hapusDraftMatang(idx)" class="text-red-400 hover:text-red-600 font-black text-lg leading-none px-1">×</button>
-                </div>
-              </div>
-              <p v-if="draftMatang.length === 0" class="text-xs text-center text-gray-400 font-bold italic py-4">Keranjang kosong.</p>
-            </div>
-            <button @click="finalisasiMatang" :disabled="draftMatang.length === 0 || isSubmitting" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95">
-              {{ isSubmitting ? 'MEMPROSES...' : '🍞 EKSEKUSI' }}
-            </button>
+            <p v-if="listBarang.length === 0" class="text-xs text-center text-gray-400 font-bold italic py-4">Loading produk...</p>
           </div>
+
+          <button @click="finalisasiMatangMasal" :disabled="isSubmitting" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95">
+            {{ isSubmitting ? 'MEMPROSES...' : '🍞 EKSEKUSI SEMUA' }}
+          </button>
         </div>
 
         <div class="p-6 bg-gray-50 flex-1">

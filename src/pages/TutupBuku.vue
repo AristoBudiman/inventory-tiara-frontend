@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const getToday = () => new Date().toISOString().split('T')[0]
 const filterTanggal = ref(getToday())
@@ -7,6 +7,10 @@ const filterTanggal = ref(getToday())
 const jurnalEfisiensi = ref([])
 const sisaLayakJual = ref([])
 const isCalculating = ref(false)
+
+const filteredSisaLayakJual = computed(() => {
+  return sisaLayakJual.value.filter(s => s.qty_sisa !== 0)
+})
 
 const fetchJurnal = async () => {
   const token = localStorage.getItem('inventory_token')
@@ -109,17 +113,19 @@ onMounted(fetchJurnal)
         
         <div class="p-6 bg-gray-50 flex-1">
           <div class="grid grid-cols-2 gap-4">
-             <div v-for="s in sisaLayakJual" :key="s.ID" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+             <div v-for="s in filteredSisaLayakJual" :key="s.ID" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
                 <p class="font-bold text-gray-700 text-sm mb-3 leading-tight">{{ s.barang.NamaBarang }}</p>
                 <div class="flex items-end justify-between">
                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sisa Fisik</span>
-                   <p class="text-2xl font-black text-blue-700 leading-none">{{ s.qty_sisa }} <span class="text-xs font-bold text-blue-400">Pcs</span></p>
+                   <p class="text-2xl font-black leading-none" :class="s.qty_sisa < 0 ? 'text-rose-600' : 'text-blue-700'">
+                     {{ s.qty_sisa > 0 ? '+' : '' }}{{ s.qty_sisa }} <span class="text-xs font-bold" :class="s.qty_sisa < 0 ? 'text-rose-400' : 'text-blue-400'">Pcs</span>
+                   </p>
                 </div>
              </div>
           </div>
 
-          <div v-if="sisaLayakJual.length === 0" class="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl mt-4">
-             <p class="text-sm text-gray-400 font-bold">Tidak ada sisa produk layak jual.</p>
+          <div v-if="filteredSisaLayakJual.length === 0" class="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl mt-4">
+             <p class="text-sm text-gray-400 font-bold">Semua produk habis terjual / balance (0 Pcs).</p>
           </div>
         </div>
       </div>
