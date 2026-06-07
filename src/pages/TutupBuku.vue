@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Moon, Settings, TrendingDown, Scale, Package, Truck } from 'lucide-vue-next'
 
 const getToday = () => new Date().toISOString().split('T')[0]
 const filterTanggal = ref(getToday())
@@ -41,7 +42,7 @@ onMounted(fetchJurnal)
     <!-- HEADER -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200 gap-4">
         <div>
-          <h1 class="text-3xl font-black text-gray-800 tracking-tight">🌙 Laporan Tutup Buku</h1>
+          <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><Moon :size="32" /> Laporan Tutup Buku</h1>
           <p class="text-sm text-gray-500 font-medium mt-1">Audit efisiensi kinerja koki dan inventarisasi sisa layak jual harian.</p>
         </div>
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
@@ -49,7 +50,7 @@ onMounted(fetchJurnal)
                <input type="date" v-model="filterTanggal" @change="fetchJurnal" class="border-none bg-transparent font-bold focus:ring-0 text-gray-800 outline-none cursor-pointer text-center w-full">
             </div>
             <button @click="eksekusiTutupBuku" :disabled="isCalculating" class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 transition-all active:scale-95 whitespace-nowrap flex justify-center items-center gap-2">
-              {{ isCalculating ? 'Menghitung...' : '⚙️ EKSEKUSI' }}
+              <Settings v-if="!isCalculating" :size="18" /> {{ isCalculating ? 'Menghitung...' : 'EKSEKUSI' }}
             </button>
         </div>
     </div>
@@ -60,10 +61,10 @@ onMounted(fetchJurnal)
       <div class="bg-white rounded-2xl shadow-sm border border-rose-100 flex flex-col overflow-hidden">
         <div class="bg-rose-600 p-5 text-white flex justify-between items-center">
           <div>
-            <h2 class="font-black text-lg tracking-wide">📉 Jurnal Efisiensi Koki</h2>
+            <h2 class="font-black text-lg tracking-wide flex items-center gap-2"><TrendingDown :size="20" /> Jurnal Efisiensi Koki</h2>
             <p class="text-[10px] font-bold text-rose-200 uppercase tracking-wider mt-0.5">Prediksi Modal vs Hasil Fisik Roti</p>
           </div>
-          <span class="text-3xl opacity-50">⚖️</span>
+          <div class="text-rose-300 opacity-50"><Scale :size="32" /></div>
         </div>
         
         <div class="p-6 bg-gray-50 flex-1">
@@ -105,10 +106,10 @@ onMounted(fetchJurnal)
       <div class="bg-white rounded-2xl shadow-sm border border-blue-100 flex flex-col overflow-hidden">
         <div class="bg-blue-600 p-5 text-white flex justify-between items-center">
           <div>
-            <h2 class="font-black text-lg tracking-wide">📦 Sisa Kelayakan Jual</h2>
+            <h2 class="font-black text-lg tracking-wide flex items-center gap-2"><Package :size="20" /> Sisa Kelayakan Jual</h2>
             <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider mt-0.5">Sisa Fisik Yang Digeser Ke Besok (Carry-Over)</p>
           </div>
-          <span class="text-3xl opacity-50">🚚</span>
+          <div class="text-blue-300 opacity-50"><Truck :size="32" /></div>
         </div>
         
         <div class="p-6 bg-gray-50 flex-1">

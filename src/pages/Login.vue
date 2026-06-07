@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { Hourglass } from 'lucide-vue-next'
 const router = useRouter()
 const username = ref('')
 const password = ref('')
@@ -91,7 +91,7 @@ const handleLogin = async () => {
           </div>
 
           <div v-if="isLoading" class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-start gap-3 mt-2">
-              <span class="text-xl">⏳</span>
+              <Hourglass :size="24" class="text-yellow-600" />
               <div>
                  <p class="text-sm font-bold text-yellow-800">Membangunkan server...</p>
                  <p class="text-[10px] font-medium text-yellow-700 leading-tight mt-0.5">Mohon tunggu sekitar 50 detik jika ini login pertama. Sistem sedang menyiapkan database.</p>

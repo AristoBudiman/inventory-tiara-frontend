@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { Layers, Plus, Pencil, Sparkles, Lightbulb } from 'lucide-vue-next'
 
 const listKomposit = ref([])
 const listBahan = ref([])
@@ -112,14 +113,14 @@ onMounted(fetchMasterData)
 </script>
 
 <template>
-  <div class="p-8 max-w-5xl mx-auto animate-fade-in">
+  <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
     <div class="flex items-center justify-between border-b-2 border-gray-200 pb-4 mb-6">
       <div>
-        <h1 class="text-3xl font-black text-gray-800 tracking-tight">🧈 Master Komposit</h1>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><Layers :size="32" /> Master Komposit</h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Kelola formula rasio barang setengah jadi (Pre-mix, Campuran Butter, Isian Coklat).</p>
       </div>
       <button @click="bukaModalTambah" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2">
-        ➕ Buat Komposit
+        <Plus :size="18" /> Buat Komposit
       </button>
     </div>
 
@@ -158,7 +159,11 @@ onMounted(fetchMasterData)
 
     <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 overflow-y-auto custom-scrollbar flex items-start justify-center p-4">
       <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-2xl border-t-8 border-yellow-400 mt-10 mb-10 overflow-visible">
-        <h2 class="text-xl font-black text-gray-800 mb-6">{{ isEdit ? '✏️ Edit Komposit' : '✨ Buat Komposit Baru' }}</h2>
+        <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+          <Pencil v-if="isEdit" :size="24" />
+          <Sparkles v-else :size="24" />
+          {{ isEdit ? 'Edit Komposit' : 'Buat Komposit Baru' }}
+        </h2>
         
         <form @submit.prevent="simpanKomposit" class="space-y-5">
           <div>
@@ -210,7 +215,7 @@ onMounted(fetchMasterData)
             </div>
             
             <p class="text-[10px] font-bold text-yellow-700 mt-3 flex items-center gap-1">
-              <span>💡</span> Angka rasio bebas (misal: 4, 2, 7). Sistem otomatis menghitung pecahannya.
+              <Lightbulb :size="14" /> Angka rasio bebas (misal: 4, 2, 7). Sistem otomatis menghitung pecahannya.
             </p>
           </div>
 

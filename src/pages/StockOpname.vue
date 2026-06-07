@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { Scale, ClipboardEdit, Plus } from 'lucide-vue-next'
 
 const today = new Date()
 const year = today.getFullYear()
@@ -23,6 +24,13 @@ const bahanTerpilih = ref(null)
 
 const searchQuery = ref('')
 const isDropdownOpen = ref(false)
+const showModalOpname = ref(false)
+
+watch(showModalOpname, (isOpen) => {
+  if (isOpen) document.body.style.overflow = 'hidden'
+  else document.body.style.overflow = ''
+})
+onUnmounted(() => { document.body.style.overflow = '' })
 
 // Logika filter otomatis berdasarkan ketikan
 const filteredBahan = computed(() => {
@@ -90,6 +98,7 @@ const simpanOpname = async () => {
     form.value = { bahan_id: '', stok_fisik: 0, keterangan: '' }
     bahanTerpilih.value = null
     searchQuery.value = ''
+    showModalOpname.value = false
     fetchData()
   }
 }
@@ -111,9 +120,14 @@ onMounted(fetchData)
   <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
     
     <!-- HEADER -->
-    <div class="border-b-2 border-gray-200 pb-4">
-      <h1 class="text-3xl font-black text-gray-800 tracking-tight">⚖️ Stock Opname Gudang</h1>
-      <p class="text-sm text-gray-500 font-medium mt-1">Sidak fisik bahan baku dan kemasan untuk menyesuaikan selisih sistem.</p>
+    <div class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-gray-200 pb-4 gap-4">
+      <div>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><Scale :size="32" /> Stock Opname Gudang</h1>
+        <p class="text-sm text-gray-500 font-medium mt-1">Sidak fisik bahan baku dan kemasan untuk menyesuaikan selisih sistem.</p>
+      </div>
+      <button @click="showModalOpname = true" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
+        <Plus :size="18" /> Input Timbangan Fisik
+      </button>
     </div>
 
     <!-- FILTER TANGGAL -->
@@ -128,70 +142,7 @@ onMounted(fetchData)
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- FORM INPUT (KIRI) -->
-      <div class="lg:col-span-4">
-        <div class="bg-white rounded-xl shadow-md border border-purple-200 overflow-hidden sticky top-24">
-          <div class="bg-purple-600 p-4 text-white flex items-center gap-2">
-            <h2 class="text-lg font-bold tracking-wide">📝 Input Timbangan Fisik</h2>
-          </div>
-          
-          <form @submit.prevent="simpanOpname" class="p-5 space-y-4 bg-purple-50/30">
-            <div class="relative">
-               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Pilih Bahan Baku (Ketik Nama)</label>
-               
-               <input 
-                 type="text" 
-                 v-model="searchQuery" 
-                 @focus="isDropdownOpen = true; searchQuery = ''" 
-                 @blur="tutupDropdown"
-                 placeholder="🔍 Ketik nama tepung, gula..." 
-                 required
-                 class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 bg-white text-gray-800 transition-colors"
-               >
-               
-               <ul v-if="isDropdownOpen" class="absolute z-50 w-full bg-white border-2 border-purple-300 mt-1 rounded-lg shadow-xl max-h-56 overflow-y-auto custom-scrollbar">
-                 <li 
-                   v-for="b in filteredBahan" 
-                   :key="b.ID" 
-                   @mousedown.prevent="selectBahan(b)"
-                   class="p-3 hover:bg-purple-100 cursor-pointer font-bold text-sm text-gray-700 border-b border-gray-100 last:border-0 transition-colors"
-                 >
-                   {{ b.nama_bahan }}
-                 </li>
-                 <li v-if="filteredBahan.length === 0" class="p-4 text-center text-xs font-bold text-red-400 italic bg-red-50">
-                   Bahan tidak ditemukan!
-                 </li>
-               </ul>
-            </div>
-            
-            <div v-if="bahanTerpilih" class="bg-purple-100/50 p-3 rounded-lg border border-purple-200 text-center animate-fade-in">
-               <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider mb-1">Stok Komputer Saat Ini</p>
-               <p class="text-2xl font-black text-purple-900 leading-none">{{ bahanTerpilih.stok }} <span class="text-xs font-bold text-purple-600 uppercase">{{ bahanTerpilih.satuan }}</span></p>
-            </div>
-
-            <div class="pt-2">
-               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Hasil Timbangan Nyata</label>
-               <input v-model.number="form.stok_fisik" type="number" step="any" min="0" required class="w-full border-2 border-gray-300 bg-white rounded-lg p-3 font-black text-center text-gray-900 outline-none focus:border-purple-500 transition-colors text-lg">
-            </div>
-
-            <div>
-               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Selisih (Opsional)</label>
-               <input v-model="form.keterangan" type="text" placeholder="Contoh: Tepung tumpah dimakan tikus" class="w-full border-2 border-gray-300 rounded-lg p-2.5 font-bold outline-none focus:border-purple-500 bg-white text-gray-700 transition-colors">
-            </div>
-
-            <div class="pt-4 border-t border-gray-200">
-               <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 rounded-lg font-black shadow-md transition-all active:scale-95">
-                 KUNCI OPNAME
-               </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- TABEL RIWAYAT (KANAN) -->
-      <div class="lg:col-span-8">
+    <div class="w-full">
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div class="bg-gray-50 px-6 py-4 border-b-2 border-gray-200">
             <h2 class="font-bold text-gray-800 text-sm md:text-base">Riwayat Stock Opname (Efisiensi Gudang)</h2>
@@ -234,8 +185,81 @@ onMounted(fetchData)
           </div>
         </div>
       </div>
-
     </div>
+
+    <!-- MODAL OPNAME -->
+    <div v-if="showModalOpname" class="fixed inset-0 z-50 overflow-y-auto custom-scrollbar bg-slate-900/40 backdrop-blur-md">
+      <div class="flex items-center justify-center min-h-screen p-4 md:p-8">
+        
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl border-t-8 border-purple-600 animate-fade-in relative">
+          
+          <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-2xl">
+            <div>
+              <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+                <ClipboardEdit :size="24" class="text-purple-600" />
+                Input Timbangan Fisik
+              </h2>
+              <p class="text-xs text-gray-500 font-medium mt-1">Sesuai hasil sidak lapangan hari ini.</p>
+            </div>
+            <button @click="showModalOpname = false" class="text-gray-400 hover:text-red-500 transition-colors p-2 bg-gray-50 rounded-full hover:bg-red-50">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="simpanOpname" class="p-6 space-y-5 bg-purple-50/30">
+            <div class="relative">
+               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Pilih Bahan Baku (Ketik Nama)</label>
+               
+               <input 
+                 type="text" 
+                 v-model="searchQuery" 
+                 @focus="isDropdownOpen = true; searchQuery = ''" 
+                 @blur="tutupDropdown"
+                 placeholder="Ketik nama tepung, gula..." 
+                 required
+                 class="w-full border-2 border-gray-300 rounded-xl p-3 font-bold outline-none focus:border-purple-500 bg-white text-gray-800 transition-colors"
+               >
+               
+               <ul v-if="isDropdownOpen" class="absolute z-50 w-full bg-white border-2 border-purple-300 mt-1 rounded-xl shadow-xl max-h-56 overflow-y-auto custom-scrollbar">
+                 <li 
+                   v-for="b in filteredBahan" 
+                   :key="b.ID" 
+                   @mousedown.prevent="selectBahan(b)"
+                   class="p-3 hover:bg-purple-100 cursor-pointer font-bold text-sm text-gray-700 border-b border-gray-100 last:border-0 transition-colors"
+                 >
+                   {{ b.nama_bahan }}
+                 </li>
+                 <li v-if="filteredBahan.length === 0" class="p-4 text-center text-xs font-bold text-red-400 italic bg-red-50">
+                   Bahan tidak ditemukan!
+                 </li>
+               </ul>
+            </div>
+            
+            <div v-if="bahanTerpilih" class="bg-purple-100/50 p-4 rounded-xl border border-purple-200 text-center animate-fade-in">
+               <p class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Stok Komputer Saat Ini</p>
+               <p class="text-3xl font-black text-purple-900 leading-none">{{ bahanTerpilih.stok }} <span class="text-sm font-bold text-purple-600 uppercase">{{ bahanTerpilih.satuan }}</span></p>
+            </div>
+
+            <div class="pt-2">
+               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Hasil Timbangan Nyata</label>
+               <input v-model.number="form.stok_fisik" type="number" step="any" min="0" required class="w-full border-2 border-gray-300 bg-white rounded-xl p-4 font-black text-center text-gray-900 outline-none focus:border-purple-500 transition-colors text-2xl">
+            </div>
+
+            <div>
+               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Selisih (Opsional)</label>
+               <input v-model="form.keterangan" type="text" placeholder="Contoh: Tepung tumpah dimakan tikus" class="w-full border-2 border-gray-300 rounded-xl p-3 font-bold outline-none focus:border-purple-500 bg-white text-gray-700 transition-colors">
+            </div>
+
+            <div class="pt-6 mt-2 border-t border-gray-200 flex justify-end gap-3">
+               <button type="button" @click="showModalOpname = false" class="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Batal</button>
+               <button type="submit" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-black shadow-md transition-all active:scale-95">
+                 KUNCI OPNAME
+               </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
   </div>
 </template>
 

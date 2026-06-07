@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import draggable from 'vuedraggable'
+import { Package, ShoppingCart, Plus, GripVertical, AlertTriangle, Pencil, Sparkles, Scale, Ruler } from 'lucide-vue-next'
 
 const listBahan = ref([])
 const isEdit = ref(false)
@@ -303,15 +304,17 @@ onMounted(fetchBahan)
   <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
     <div class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-gray-200 pb-4 gap-4">
       <div>
-        <h1 class="text-3xl font-black text-gray-800 tracking-tight">📦 Katalog Bahan & Kemasan</h1>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2">
+          <Package :size="32" /> Katalog Bahan & Kemasan
+        </h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Kelola data mentah, stok gudang, dan HPP otomatis.</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button @click="bukaModalBeli()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
-          🛒 Catat Struk Belanja
+          <ShoppingCart :size="20" /> Catat Struk Belanja
         </button>
         <button @click="tambahBahanBaru" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
-          ➕ Tambah Bahan Baru
+          <Plus :size="20" /> Tambah Bahan Baru
         </button>
       </div>
     </div>
@@ -338,8 +341,8 @@ onMounted(fetchBahan)
           <template #item="{ element, index }">
             <tr class="hover:bg-blue-50/50 transition-colors bg-white">
               
-              <td class="p-4 font-bold text-gray-800 text-base whitespace-nowrap">
-                <span class="text-gray-400 mr-3 text-lg drag-handle cursor-grab active:cursor-grabbing" title="Tahan dan geser">☰</span>
+              <td class="p-4 font-bold text-gray-800 text-base whitespace-nowrap flex items-center gap-2">
+                <GripVertical :size="20" class="text-gray-400 drag-handle cursor-grab active:cursor-grabbing" title="Tahan dan geser" />
                 {{ element.nama_bahan }}
               </td>
 
@@ -348,7 +351,7 @@ onMounted(fetchBahan)
                   <span class="font-black text-xl mr-1">{{ element.stok }}</span> 
                   <span class="text-xs font-bold uppercase">{{ element.satuan }}</span>
                 </div>
-                <p v-if="element.stok <= element.batas_minimum" class="text-[10px] text-red-600 font-black mt-1 uppercase tracking-widest">⚠️ Stok Kritis</p>
+                <p v-if="element.stok <= element.batas_minimum" class="text-[10px] text-red-600 font-black mt-1 uppercase tracking-widest flex items-center justify-center gap-1"><AlertTriangle :size="12" /> Stok Kritis</p>
               </td>
 
               <td class="p-4 text-right whitespace-nowrap">
@@ -373,8 +376,10 @@ onMounted(fetchBahan)
 
     <div v-if="showModalBahan" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
       <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg border-t-8" :class="isEdit ? 'border-blue-500' : 'border-blue-700'">
-        <h2 class="text-xl font-black text-gray-800 mb-6">
-          {{ isEdit ? '✏️ Edit Data Bahan' : '✨ Daftarkan Bahan Baru' }}
+        <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+          <Pencil v-if="isEdit" :size="24" />
+          <Sparkles v-else :size="24" />
+          {{ isEdit ? 'Edit Data Bahan' : 'Daftarkan Bahan Baru' }}
         </h2>
 
         <form @submit.prevent="simpanBahan" class="space-y-4">
@@ -605,7 +610,7 @@ onMounted(fetchBahan)
     <div v-if="showModalOpname" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
       <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm border-t-8 border-purple-500 animate-fade-in">
         <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-          <span>⚖️</span> Stok Opname Cepat
+          <Scale :size="24" /> Stok Opname Cepat
         </h2>
 
         <div class="bg-purple-50 p-4 rounded-lg text-center mb-6 border border-purple-100">
@@ -640,8 +645,8 @@ onMounted(fetchBahan)
     <div v-if="showModalSatuan" class="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
       <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg border-t-8 border-indigo-500 animate-fade-in">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-black text-gray-800">
-            📐 Satuan {{ bahanAktif?.nama_bahan }}
+          <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <Ruler :size="24" /> Satuan {{ bahanAktif?.nama_bahan }}
           </h2>
           <button @click="showModalSatuan = false" class="text-gray-400 hover:text-red-500 transition-colors font-black text-xl">&times;</button>
         </div>
@@ -651,7 +656,7 @@ onMounted(fetchBahan)
             <p class="text-[10px] text-gray-500 font-bold uppercase">Satuan Dasar</p>
             <p class="font-black text-indigo-900 text-lg">1 {{ bahanAktif?.satuan }}</p>
           </div>
-          <span class="text-2xl">⚖️</span>
+          <Scale :size="32" class="text-indigo-400" />
         </div>
 
         <div class="space-y-3 mb-6 max-h-48 overflow-y-auto custom-scrollbar pr-2">

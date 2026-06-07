@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { ChefHat, Flame, ShoppingCart, Croissant, Trash2 } from 'lucide-vue-next'
 
 const getToday = () => new Date().toISOString().split('T')[0]
 
@@ -169,7 +170,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
     
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200 gap-4">
         <div>
-          <h1 class="text-3xl font-black text-gray-800 tracking-tight">👨‍🍳 Eksekusi Dapur</h1>
+          <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><ChefHat :size="32" /> Eksekusi Dapur</h1>
           <p class="text-sm text-gray-500 font-medium mt-1">Laporan harian adonan dimasak, barang matang, & barang afkir.</p>
         </div>
         <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
@@ -184,7 +185,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
       <!-- KIRI: PANEL MASAK (ORANGE) -->
       <div class="bg-white rounded-2xl shadow-md border border-orange-100 flex flex-col overflow-hidden">
         <div class="bg-orange-500 p-5 text-white flex items-center gap-3">
-          <span class="text-2xl">🔥</span>
+          <Flame :size="28" />
           <div>
              <h2 class="text-lg font-black tracking-wide">Langkah 1: Masak</h2>
              <p class="text-[10px] font-bold text-orange-200 uppercase tracking-wider">Potong Stok Bahan Mentah</p>
@@ -203,14 +204,14 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <div class="w-20">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 text-center">Batch</label>
-                <input v-model.number="formMasak.jumlah_batch" type="number" required min="0.1" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-orange-500 font-black text-center outline-none text-orange-600 bg-white">
+                <input v-model.number="formMasak.jumlah_batch" type="number" @wheel="$event.target.blur()" required min="0.1" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-orange-500 font-black text-center outline-none text-orange-600 bg-white">
               </div>
               <button type="submit" class="bg-white border-2 border-orange-200 hover:border-orange-500 text-orange-600 font-black p-2.5 rounded-lg shadow-sm transition-colors text-xl leading-none px-4">+</button>
             </div>
           </form>
 
           <div class="bg-white border-2 border-dashed border-orange-200 rounded-xl p-4">
-            <h3 class="text-[10px] font-black text-orange-500 uppercase tracking-wider mb-3">🛒 Draft Tunggu Eksekusi</h3>
+            <h3 class="text-[10px] font-black text-orange-500 uppercase tracking-wider mb-3 flex items-center gap-1"><ShoppingCart :size="14" /> Draft Tunggu Eksekusi</h3>
             <div class="space-y-2 mb-4">
               <div v-for="(draft, idx) in draftMasak" :key="idx" class="bg-orange-50 p-2.5 rounded-lg border border-orange-100 flex justify-between items-center">
                 <p class="font-bold text-gray-800 text-sm truncate pr-2">{{ draft.nama_resep }}</p>
@@ -221,8 +222,8 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <p v-if="draftMasak.length === 0" class="text-xs text-center text-gray-400 font-bold italic py-4">Keranjang kosong.</p>
             </div>
-            <button @click="finalisasiMasak" :disabled="draftMasak.length === 0 || isSubmitting" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95">
-              {{ isSubmitting ? 'MEMPROSES...' : '🔥 EKSEKUSI' }}
+            <button @click="finalisasiMasak" :disabled="draftMasak.length === 0 || isSubmitting" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <Flame v-if="!isSubmitting" :size="20" /> {{ isSubmitting ? 'MEMPROSES...' : 'EKSEKUSI' }}
             </button>
           </div>
         </div>
@@ -252,7 +253,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
       <!-- TENGAH: PANEL MATANG (HIJAU) -->
       <div class="bg-white rounded-2xl shadow-md border border-emerald-100 flex flex-col overflow-hidden">
         <div class="bg-emerald-600 p-5 text-white flex items-center gap-3">
-          <span class="text-2xl">🍞</span>
+          <Croissant :size="28" />
           <div>
              <h2 class="text-lg font-black tracking-wide">Langkah 2: Matang</h2>
              <p class="text-[10px] font-bold text-emerald-200 uppercase tracking-wider">Catat Fisik Kue Siap Jual</p>
@@ -265,14 +266,14 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
             <div v-for="b in listBarang" :key="b.ID" class="flex justify-between items-center border-b border-gray-100 last:border-0 py-2.5">
               <span class="text-xs font-bold text-gray-700 truncate pr-2">{{ b.NamaBarang }}</span>
               <div class="w-20 shrink-0">
-                <input v-model.number="inputMatangBanyak[b.ID]" type="number" min="0" step="any" placeholder="0" class="w-full border-2 border-emerald-100 rounded-lg p-1.5 text-center font-black text-emerald-700 outline-none focus:border-emerald-500 transition-colors bg-emerald-50/30">
+                <input v-model.number="inputMatangBanyak[b.ID]" type="number" @wheel="$event.target.blur()" min="0" step="any" placeholder="0" class="w-full border-2 border-emerald-100 rounded-lg p-1.5 text-center font-black text-emerald-700 outline-none focus:border-emerald-500 transition-colors bg-emerald-50/30">
               </div>
             </div>
             <p v-if="listBarang.length === 0" class="text-xs text-center text-gray-400 font-bold italic py-4">Loading produk...</p>
           </div>
 
-          <button @click="finalisasiMatangMasal" :disabled="isSubmitting" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95">
-            {{ isSubmitting ? 'MEMPROSES...' : '🍞 EKSEKUSI SEMUA' }}
+          <button @click="finalisasiMatangMasal" :disabled="isSubmitting" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <Croissant v-if="!isSubmitting" :size="20" /> {{ isSubmitting ? 'MEMPROSES...' : 'EKSEKUSI SEMUA' }}
           </button>
         </div>
 
@@ -298,7 +299,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
       <!-- KANAN: PANEL RUSAK/AFKIR (MERAH) -->
       <div class="bg-white rounded-2xl shadow-md border border-red-100 flex flex-col overflow-hidden">
         <div class="bg-red-600 p-5 text-white flex items-center gap-3">
-          <span class="text-2xl">🗑️</span>
+          <Trash2 :size="28" />
           <div>
              <h2 class="text-lg font-black tracking-wide">Langkah 3: Afkir</h2>
              <p class="text-[10px] font-bold text-red-200 uppercase tracking-wider">Catat Rusak / Basi / Gratis</p>
@@ -317,7 +318,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <div class="w-20">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 text-center">Pcs</label>
-                <input v-model.number="formRusak.qty" type="number" required min="0.01" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-red-500 font-black text-center outline-none text-red-600 bg-white">
+                <input v-model.number="formRusak.qty" type="number" @wheel="$event.target.blur()" required min="0.01" step="any" class="w-full border-2 border-gray-200 rounded-lg p-2.5 focus:border-red-500 font-black text-center outline-none text-red-600 bg-white">
               </div>
             </div>
             <div class="flex gap-3 items-end">
@@ -329,7 +330,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
           </form>
 
           <div class="bg-white border-2 border-dashed border-red-200 rounded-xl p-4">
-            <h3 class="text-[10px] font-black text-red-600 uppercase tracking-wider mb-3">🛒 Draft Tunggu Eksekusi</h3>
+            <h3 class="text-[10px] font-black text-red-600 uppercase tracking-wider mb-3 flex items-center gap-1"><ShoppingCart :size="14" /> Draft Tunggu Eksekusi</h3>
             <div class="space-y-2 mb-4">
               <div v-for="(draft, idx) in draftRusak" :key="idx" class="bg-red-50 p-2.5 rounded-lg border border-red-100 flex justify-between items-center">
                 <div class="overflow-hidden pr-2">
@@ -343,8 +344,8 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
               </div>
               <p v-if="draftRusak.length === 0" class="text-xs text-center text-gray-400 font-bold italic py-4">Keranjang kosong.</p>
             </div>
-            <button @click="finalisasiRusak" :disabled="draftRusak.length === 0 || isSubmitting" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95">
-              {{ isSubmitting ? 'MEMPROSES...' : '🗑️ EKSEKUSI AFKIR' }}
+            <button @click="finalisasiRusak" :disabled="draftRusak.length === 0 || isSubmitting" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 rounded-lg shadow-md disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <Trash2 v-if="!isSubmitting" :size="20" /> {{ isSubmitting ? 'MEMPROSES...' : 'EKSEKUSI AFKIR' }}
             </button>
           </div>
         </div>

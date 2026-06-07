@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { Scissors } from 'lucide-vue-next'
 
 const isLoading = ref(false)
 const riwayat = ref([])
@@ -117,10 +118,10 @@ onMounted(fetchAwal)
 </script>
 
 <template>
-  <div class="p-4 md:p-8 max-w-5xl mx-auto space-y-8 animate-fade-in">
+  <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
     
     <div class="mb-6 border-b pb-4">
-      <h1 class="text-3xl font-black text-gray-800 tracking-tight">✂️ Pecah Barang (Konversi)</h1>
+      <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><Scissors :size="32" /> Pecah Barang (Konversi)</h1>
       <p class="text-sm text-gray-500 font-medium mt-1">Gunakan fitur ini untuk menukar 1 barang utuh menjadi banyak potongan (Misal: Kertas Utuh dipotong jadi 12x12 dan 20x20).</p>
     </div>
 

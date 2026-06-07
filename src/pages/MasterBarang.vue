@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
+import { ShoppingBag, Save, Plus, Pencil, Sparkles, Soup, Layers, Package } from 'lucide-vue-next'
 
 const listBarang = ref([])
 const listResep = ref([])
@@ -120,18 +121,18 @@ onMounted(fetchMasterData)
 </script>
 
 <template>
-  <div class="p-8 max-w-7xl mx-auto animate-fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b-2 border-gray-200 pb-4 gap-4">
+  <div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
+    <div class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-gray-200 pb-4 gap-4">
       <div>
-        <h1 class="text-3xl font-black text-gray-800 tracking-tight">🍞 Katalog Produk Jual</h1>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><ShoppingBag :size="32" /> Katalog Produk Jual</h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Daftarkan barang jadi dan hubungkan dengan resep, komposit, serta kemasan.</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button @click="simpanUrutan" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg shadow-md font-bold text-sm transition-colors flex items-center gap-2">
-          💾 Kunci Urutan
+          <Save :size="18" /> Kunci Urutan
         </button>
         <button @click="tambahBarangBaru" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md font-bold text-sm transition-colors flex items-center gap-2">
-          ➕ Tambah Produk
+          <Plus :size="18" /> Tambah Produk
         </button>
       </div>
     </div>
@@ -139,7 +140,11 @@ onMounted(fetchMasterData)
     <div v-if="showModalBarang" class="fixed inset-0 backdrop-blur-md bg-white/30 z-50 overflow-y-auto custom-scrollbar flex items-start justify-center p-4">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl border-t-8 mt-10 mb-10 overflow-visible relative" :class="isEdit ? 'border-blue-500' : 'border-blue-700'">
         <div class="bg-blue-600 rounded-t-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-          <h2 class="text-lg font-bold text-white tracking-tight">{{ isEdit ? '✏️ Edit Data Produk' : '✨ Buat Produk Baru' }}</h2>
+          <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+             <Pencil v-if="isEdit" :size="20" />
+             <Sparkles v-else :size="20" />
+             {{ isEdit ? 'Edit Data Produk' : 'Buat Produk Baru' }}
+          </h2>
           <button @click="showModalBarang = false" type="button" class="text-white hover:text-red-200 transition-colors">
              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
@@ -365,7 +370,7 @@ onMounted(fetchMasterData)
                     <div class="flex flex-col gap-2 max-w-md max-h-32 overflow-y-auto custom-scrollbar pr-2">
                       
                       <div v-if="b.resep_id" class="flex items-center gap-2">
-                         <span class="text-orange-500 text-sm">🥣</span>
+                         <Soup :size="16" class="text-orange-500 shrink-0" />
                          <div class="bg-orange-50 border border-orange-200 rounded px-2 py-1 flex items-center gap-2">
                             <span class="text-[11px] font-bold text-orange-900">{{ b.resep?.nama_resep || 'Resep Terhapus' }}</span>
                             <span class="text-[10px] font-black text-orange-700 border-l border-orange-200 pl-2">{{ b.kebutuhan_adonan }} {{ b.metode_konversi }}</span>
@@ -374,7 +379,7 @@ onMounted(fetchMasterData)
                       </div>
 
                       <div v-if="b.komposit_detail && b.komposit_detail.length > 0" class="flex items-start gap-2">
-                         <span class="text-yellow-500 text-sm mt-0.5">🧈</span>
+                         <Layers :size="16" class="text-yellow-500 mt-0.5 shrink-0" />
                          <div class="flex flex-wrap gap-1.5">
                             <span v-for="kd in b.komposit_detail" :key="kd.ID" class="bg-yellow-50 border border-yellow-300 rounded px-1.5 py-0.5 text-[10px] font-bold text-yellow-800 shadow-sm">
                                {{ kd.resep_komposit?.nama_komposit }} <span class="text-yellow-600 font-black ml-1">{{ kd.kebutuhan }}g</span>
@@ -383,7 +388,7 @@ onMounted(fetchMasterData)
                       </div>
                       
                       <div v-if="b.kemasan_detail && b.kemasan_detail.length > 0" class="flex items-start gap-2">
-                         <span class="text-purple-500 text-sm mt-0.5">📦</span>
+                         <Package :size="16" class="text-purple-500 mt-0.5 shrink-0" />
                          <div class="flex flex-wrap gap-1.5">
                             <span v-for="kd in b.kemasan_detail" :key="kd.ID" class="bg-purple-50 border border-purple-200 rounded px-1.5 py-0.5 text-[10px] font-bold text-purple-800 shadow-sm">
                                {{ kd.bahan?.nama_bahan }} (x{{ kd.kebutuhan }})

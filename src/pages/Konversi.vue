@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { CloudSun, TriangleAlert, Calculator, ChefHat, PartyPopper } from 'lucide-vue-next'
 
 const getToday = () => new Date().toISOString().split('T')[0]
 const tanggal = ref(getToday())
@@ -94,7 +95,7 @@ onMounted(fetchAwal)
     <!-- KOTAK KALKULATOR -->
     <div class="bg-white p-8 rounded-2xl shadow-md border-t-8 border-yellow-400">
       <div class="mb-8">
-        <h1 class="text-3xl font-black text-gray-800 tracking-tight">🌤️ Kalkulator Produksi Pagi</h1>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2"><CloudSun :size="32" /> Kalkulator Produksi Pagi</h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Masukkan target total orderan. Sistem akan otomatis memotong sisa layak jual dari kemarin.</p>
       </div>
 
@@ -139,14 +140,14 @@ onMounted(fetchAwal)
         <div class="flex flex-col md:flex-row items-end justify-end gap-4">
            <!-- ALERT STOK -->
            <div v-if="peringatanStok.length > 0" class="flex-1 w-full bg-red-50 border-2 border-red-200 rounded-xl p-4 shadow-sm animate-pulse">
-             <h4 class="text-red-700 font-black text-sm mb-2 flex items-center gap-2">⚠️ BAHAN MENTAH TIDAK MENCUKUPI:</h4>
+             <h4 class="text-red-700 font-black text-sm mb-2 flex items-center gap-2"><TriangleAlert :size="18" /> BAHAN MENTAH TIDAK MENCUKUPI:</h4>
              <ul class="list-disc list-inside text-xs font-bold text-red-600 space-y-1">
                 <li v-for="(alert, idx) in peringatanStok" :key="idx">{{ alert }}</li>
              </ul>
            </div>
 
-           <button type="submit" class="bg-gray-900 hover:bg-black text-yellow-400 px-8 py-4 rounded-xl font-black shadow-lg transition-transform active:scale-95 text-lg whitespace-nowrap border-2 border-transparent hover:border-yellow-400">
-             🧮 KALKULASI DAPUR
+           <button type="submit" class="bg-gray-900 hover:bg-black text-yellow-400 px-8 py-4 rounded-xl font-black shadow-lg transition-transform active:scale-95 text-lg whitespace-nowrap border-2 border-transparent hover:border-yellow-400 flex items-center gap-2">
+             <Calculator :size="24" /> KALKULASI DAPUR
            </button>
         </div>
       </form>
@@ -154,15 +155,17 @@ onMounted(fetchAwal)
 
     <!-- HASIL REKAP (MUNCUL JIKA DIHITUNG) -->
     <div v-if="isDihitung" class="bg-slate-900 rounded-2xl p-8 shadow-xl border-4 border-yellow-400 animate-fade-in relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 text-9xl opacity-10 pointer-events-none">👨‍🍳</div>
+      <ChefHat class="absolute -right-10 -top-10 w-64 h-64 opacity-5 text-white pointer-events-none" />
       
       <h2 class="text-2xl font-black text-white mb-6 flex items-center gap-3">
-        <span class="bg-yellow-400 text-slate-900 p-2 rounded-lg leading-none">👨‍🍳</span>
+        <div class="bg-yellow-400 text-slate-900 p-2 rounded-lg flex items-center justify-center">
+          <ChefHat :size="24" />
+        </div>
         Surat Perintah Kerja (SPK) Dapur
       </h2>
 
-      <div v-if="hasilRekapResep.length === 0" class="text-center p-8 bg-slate-800 rounded-xl text-emerald-400 font-bold border border-emerald-500/30">
-         🎉 Luar Biasa! Sisa kemarin masih cukup menutupi semua order hari ini. Dapur libur masak adonan!
+      <div v-if="hasilRekapResep.length === 0" class="text-center p-8 bg-slate-800 rounded-xl text-emerald-400 font-bold border border-emerald-500/30 flex items-center justify-center gap-2">
+         <PartyPopper :size="20" /> Luar Biasa! Sisa kemarin masih cukup menutupi semua order hari ini. Dapur libur masak adonan!
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
