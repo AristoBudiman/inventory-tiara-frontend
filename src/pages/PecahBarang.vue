@@ -49,12 +49,12 @@ const removeDetailRow = (index) => {
 }
 
 const submitForm = async () => {
-  if (!form.value.bahan_asal_id) return alert('Pilih bahan sumber terlebih dahulu!')
-  if (form.value.details.length === 0) return alert('Tambahkan minimal 1 hasil pecahan!')
+  if (!form.value.bahan_asal_id) return window.$dialog.alert('Pilih bahan sumber terlebih dahulu!')
+  if (form.value.details.length === 0) return window.$dialog.alert('Tambahkan minimal 1 hasil pecahan!')
   
   // Validasi bahan hasil terisi semua
   for (let d of form.value.details) {
-      if (!d.bahan_hasil_id) return alert('Ada kolom hasil pecahan yang belum dipilih bahannya.')
+      if (!d.bahan_hasil_id) return window.$dialog.alert('Ada kolom hasil pecahan yang belum dipilih bahannya.')
   }
 
   try {
@@ -78,7 +78,7 @@ const submitForm = async () => {
     })
 
     if (res.ok) {
-      alert('Pecah barang berhasil disimpan!')
+      window.$dialog.alert('Pecah barang berhasil disimpan!')
       // Reset form
       form.value.bahan_asal_id = ''
       form.value.qty_asal = 1
@@ -86,15 +86,15 @@ const submitForm = async () => {
       fetchAwal()
     } else {
       const err = await res.json()
-      alert('Gagal: ' + err.error)
+      window.$dialog.alert('Gagal: ' + err.error)
     }
   } catch(e) {
-      alert('Terjadi kesalahan jaringan')
+      window.$dialog.alert('Terjadi kesalahan jaringan')
   }
 }
 
 const deleteRiwayat = async (id) => {
-    if(!confirm('Yakin ingin membatalkan konversi ini? Stok akan dikembalikan seperti semula.')) return
+    if(!await window.$dialog.confirm('Yakin ingin membatalkan konversi ini? Stok akan dikembalikan seperti semula.')) return
     
     try {
         const token = localStorage.getItem('inventory_token')
@@ -103,11 +103,11 @@ const deleteRiwayat = async (id) => {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         if(res.ok) {
-            alert('Konversi dibatalkan, stok berhasil dipulihkan.')
+            window.$dialog.alert('Konversi dibatalkan, stok berhasil dipulihkan.')
             fetchAwal()
         } else {
             const err = await res.json()
-            alert('Gagal batal: ' + err.error)
+            window.$dialog.alert('Gagal batal: ' + err.error)
         }
     } catch(e) {
         console.error(e)

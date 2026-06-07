@@ -44,7 +44,7 @@ const hapusBahan = (index) => {
 }
 
 const simpanKomposit = async () => {
-  if (form.value.details.length === 0) return alert('Pilih minimal 1 bahan untuk komposit ini!')
+  if (form.value.details.length === 0) return window.$dialog.alert('Pilih minimal 1 bahan untuk komposit ini!')
   
   const token = localStorage.getItem('inventory_token')
   const url = isEdit.value 
@@ -68,11 +68,11 @@ const simpanKomposit = async () => {
   })
 
   if (res.ok) {
-    alert(isEdit.value ? 'Komposit diupdate!' : 'Komposit berhasil dibuat!')
+    window.$dialog.alert(isEdit.value ? 'Komposit diupdate!' : 'Komposit berhasil dibuat!')
     showModal.value = false
     fetchMasterData()
   } else {
-    alert('Gagal menyimpan komposit.')
+    window.$dialog.alert('Gagal menyimpan komposit.')
   }
 }
 
@@ -93,7 +93,7 @@ const editKomposit = (k) => {
 }
 
 const hapusKomposit = async (id) => {
-  if (confirm('Buang Master Komposit ini ke tempat sampah?')) {
+  if (await window.$dialog.confirm('Buang Master Komposit ini ke tempat sampah?')) {
     const token = localStorage.getItem('inventory_token')
     await fetch(`${import.meta.env.VITE_API_URL}/api/komposit/${id}`, {
       method: 'DELETE',

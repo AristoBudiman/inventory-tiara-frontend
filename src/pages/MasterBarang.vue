@@ -99,7 +99,7 @@ const editBarang = (b) => {
   } 
   showModalBarang.value = true
 }
-const hapusBarang = async (id) => { if (confirm('Buang produk ini ke tempat sampah?')) { await fetch(`${import.meta.env.VITE_API_URL}/api/barangs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` } }); fetchMasterData() } }
+const hapusBarang = async (id) => { if (await window.$dialog.confirm('Buang produk ini ke tempat sampah?')) { await fetch(`${import.meta.env.VITE_API_URL}/api/barangs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` } }); fetchMasterData() } }
 const resetForm = () => { isEdit.value = false; form.value = { ID: null, NamaBarang: '', HargaDefault: 0, resep_id: '', _resepSearch: '', _resepIsOpen: false, metode_konversi: 'Gram', kebutuhan_adonan: 0, masa_simpan: 2, kemasan_detail: [], komposit_detail: [] } }
 const formatRp = (val) => new Intl.NumberFormat('id-ID').format(val || 0)
 
@@ -108,7 +108,7 @@ const geserBawah = (idx) => { if (idx < listBarang.value.length - 1) [listBarang
 const simpanUrutan = async () => {
   const payload = listBarang.value.map((b, index) => ({ id: b.ID, urutan: index }))
   const res = await fetch(`${import.meta.env.VITE_API_URL}/api/barangs/reorder`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` }, body: JSON.stringify(payload) })
-  if (res.ok) alert("Urutan display nota berhasil dikunci!")
+  if (res.ok) window.$dialog.alert("Urutan display nota berhasil dikunci!")
 }
 
 watch(showModalBarang, (isOpen) => {

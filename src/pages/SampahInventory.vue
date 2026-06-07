@@ -13,7 +13,7 @@ const fetchTrash = async () => {
 }
 
 const restore = async (type, id) => {
-  if (confirm(`Pulihkan data ${type} ini kembali ke sistem aktif?`)) {
+  if (await window.$dialog.confirm(`Pulihkan data ${type} ini kembali ke sistem aktif?`)) {
     const token = localStorage.getItem('inventory_token')
     await fetch(`${import.meta.env.VITE_API_URL}/api/sampah/${type}/${id}`, {
       method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }

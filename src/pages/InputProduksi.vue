@@ -49,7 +49,7 @@ const fetchRiwayat = async () => {
 
 // LOGIKA MASAK
 const tambahDraftMasak = () => {
-  if (!formMasak.value.resep_id || formMasak.value.jumlah_batch <= 0) return alert('Input tidak valid!')
+  if (!formMasak.value.resep_id || formMasak.value.jumlah_batch <= 0) return window.$dialog.alert('Input tidak valid!')
   const resepTerpilih = listResep.value.find(r => r.ID === formMasak.value.resep_id)
   draftMasak.value.push({ resep_id: formMasak.value.resep_id, nama_resep: resepTerpilih.nama_resep, jumlah_batch: formMasak.value.jumlah_batch })
   formMasak.value = { resep_id: '', jumlah_batch: 1 }
@@ -58,7 +58,7 @@ const hapusDraftMasak = (idx) => draftMasak.value.splice(idx, 1)
 
 const finalisasiMasak = async () => {
   if (draftMasak.value.length === 0) return
-  if (!confirm('Eksekusi Masak? Stok bahan baku akan terpotong!')) return
+  if (!await window.$dialog.confirm('Eksekusi Masak? Stok bahan baku akan terpotong!')) return
   isSubmitting.value = true
   const token = localStorage.getItem('inventory_token')
   try {
@@ -66,7 +66,7 @@ const finalisasiMasak = async () => {
       await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/masak`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tanggal: filterTanggal.value, resep_id: item.resep_id, jumlah_batch: item.jumlah_batch }) })
     }
     draftMasak.value = []; fetchRiwayat()
-  } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
+  } catch (err) { window.$dialog.alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
 // LOGIKA MATANG MASAL
@@ -77,8 +77,8 @@ const finalisasiMatangMasal = async () => {
     .filter(id => inputMatangBanyak.value[id] > 0)
     .map(id => ({ barang_id: parseInt(id), qty_matang: inputMatangBanyak.value[id] }))
 
-  if (itemsToSubmit.length === 0) return alert('Belum ada Qty matang yang diisi!')
-  if (!confirm(`Eksekusi Matang untuk ${itemsToSubmit.length} macam produk?`)) return
+  if (itemsToSubmit.length === 0) return window.$dialog.alert('Belum ada Qty matang yang diisi!')
+  if (!await window.$dialog.confirm(`Eksekusi Matang untuk ${itemsToSubmit.length} macam produk?`)) return
   
   isSubmitting.value = true
   const token = localStorage.getItem('inventory_token')
@@ -94,12 +94,12 @@ const finalisasiMatangMasal = async () => {
       inputMatangBanyak.value[b.ID] = 0
     })
     fetchRiwayat()
-  } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
+  } catch (err) { window.$dialog.alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
 // LOGIKA RUSAK/AFKIR
 const tambahDraftRusak = () => {
-  if (!formRusak.value.barang_id || formRusak.value.qty <= 0) return alert('Input tidak valid!')
+  if (!formRusak.value.barang_id || formRusak.value.qty <= 0) return window.$dialog.alert('Input tidak valid!')
   const barangTerpilih = listBarang.value.find(b => b.ID === formRusak.value.barang_id)
   draftRusak.value.push({ barang_id: formRusak.value.barang_id, nama_barang: barangTerpilih.NamaBarang, qty: formRusak.value.qty, keterangan: formRusak.value.keterangan || 'Afkir' })
   formRusak.value = { barang_id: '', qty: 0, keterangan: '' }
@@ -108,7 +108,7 @@ const hapusDraftRusak = (idx) => draftRusak.value.splice(idx, 1)
 
 const finalisasiRusak = async () => {
   if (draftRusak.value.length === 0) return
-  if (!confirm('Catat barang rusak/afkir ke sistem? Data ini akan mengurangi sisa kelayakan jual.')) return
+  if (!await window.$dialog.confirm('Catat barang rusak/afkir ke sistem? Data ini akan mengurangi sisa kelayakan jual.')) return
   isSubmitting.value = true
   const token = localStorage.getItem('inventory_token')
   try {
@@ -116,12 +116,12 @@ const finalisasiRusak = async () => {
       await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/rusak`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tanggal: filterTanggal.value, barang_id: item.barang_id, qty: item.qty, keterangan: item.keterangan }) })
     }
     draftRusak.value = []; fetchRiwayat()
-  } catch (err) { alert('Gagal memproses.') } finally { isSubmitting.value = false }
+  } catch (err) { window.$dialog.alert('Gagal memproses.') } finally { isSubmitting.value = false }
 }
 
 // --- TAMBAHAN LOGIKA BATAL MASAK ---
 const batalMasak = async (id) => {
-  if (!confirm('Batalkan produksi masak ini? Bahan mentah akan dikembalikan otomatis ke gudang!')) return
+  if (!await window.$dialog.confirm('Batalkan produksi masak ini? Bahan mentah akan dikembalikan otomatis ke gudang!')) return
   const token = localStorage.getItem('inventory_token')
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/masak/${id}`, {
@@ -129,13 +129,13 @@ const batalMasak = async (id) => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     if(res.ok) fetchRiwayat() // Langsung refresh data setelah dihapus
-    else alert('Gagal membatalkan.')
-  } catch (err) { alert('Error saat menghubungi server.') }
+    else window.$dialog.alert('Gagal membatalkan.')
+  } catch (err) { window.$dialog.alert('Error saat menghubungi server.') }
 }
 
 // --- TAMBAHAN LOGIKA BATAL MATANG ---
 const batalMatang = async (id) => {
-  if (!confirm('Batalkan hasil matang ini? Seluruh akumulasi di baris ini akan dihapus & kemasan dikembalikan. Pastikan Anda menginput ulang angka yang benar!')) return
+  if (!await window.$dialog.confirm('Batalkan hasil matang ini? Seluruh akumulasi di baris ini akan dihapus & kemasan dikembalikan. Pastikan Anda menginput ulang angka yang benar!')) return
   const token = localStorage.getItem('inventory_token')
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/matang/${id}`, {
@@ -143,13 +143,13 @@ const batalMatang = async (id) => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     if(res.ok) fetchRiwayat() // Langsung refresh data setelah dihapus
-    else alert('Gagal membatalkan.')
-  } catch (err) { alert('Error saat menghubungi server.') }
+    else window.$dialog.alert('Gagal membatalkan.')
+  } catch (err) { window.$dialog.alert('Error saat menghubungi server.') }
 }
 
 // --- TAMBAHAN LOGIKA BATAL RUSAK/AFKIR ---
 const batalRusak = async (id) => {
-  if (!confirm('Batalkan pencatatan afkir ini? Data akan dihapus dari sistem.')) return
+  if (!await window.$dialog.confirm('Batalkan pencatatan afkir ini? Data akan dihapus dari sistem.')) return
   const token = localStorage.getItem('inventory_token')
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/rusak/${id}`, {
@@ -157,8 +157,8 @@ const batalRusak = async (id) => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     if(res.ok) fetchRiwayat() // Refresh riwayat setelah dihapus
-    else alert('Gagal membatalkan.')
-  } catch (err) { alert('Error saat menghubungi server.') }
+    else window.$dialog.alert('Gagal membatalkan.')
+  } catch (err) { window.$dialog.alert('Error saat menghubungi server.') }
 }
 
 watch(filterTanggal, fetchRiwayat)

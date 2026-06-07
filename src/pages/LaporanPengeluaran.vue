@@ -34,7 +34,7 @@ const fetchBelanja = async () => {
 
 // 3. FUNGSI BARU: MEMULIHKAN NOTA YANG TERHAPUS
 const pulihkanPembelian = async (id) => {
-  if(confirm('♻️ PULIHKAN NOTA INI?\n\n- Stok bahan akan DITAMBAHKAN kembali ke gudang.\n- Saldo Kas akan DIPOTONG kembali (jika nota ini Lunas).')) {
+  if(await window.$dialog.confirm('♻️ PULIHKAN NOTA INI?\n\n- Stok bahan akan DITAMBAHKAN kembali ke gudang.\n- Saldo Kas akan DIPOTONG kembali (jika nota ini Lunas).')) {
     const token = localStorage.getItem('inventory_token')
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${id}/pulihkan`, {
@@ -43,13 +43,13 @@ const pulihkanPembelian = async (id) => {
       })
       
       if(res.ok) {
-        alert('Data berhasil dipulihkan dan masuk ke laporan aktif!')
+        window.$dialog.alert('Data berhasil dipulihkan dan masuk ke laporan aktif!')
         fetchBelanja() 
       } else {
-        alert('Gagal memulihkan nota.')
+        window.$dialog.alert('Gagal memulihkan nota.')
       }
     } catch (err) {
-      alert('Error server.')
+      window.$dialog.alert('Error server.')
     }
   }
 }
@@ -64,7 +64,7 @@ const toggleStatusBayar = async (b) => {
     ? 'Membatalkan lunas (mengubah jadi HUTANG)? Uang akan ditarik kembali ke Kas.' 
     : 'Melunasi hutang ini? Kas akan otomatis terpotong.';
     
-  if(confirm(`Yakin ingin ${actionText}`)) {
+  if(await window.$dialog.confirm(`Yakin ingin ${actionText}`)) {
     const token = localStorage.getItem('inventory_token')
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${b.ID}/status`, {
       method: 'PUT',
@@ -82,7 +82,7 @@ const toggleStatusBayar = async (b) => {
 }
 
 const hapusPembelian = async (id) => {
-  if(confirm('HAPUS PERMANEN NOTA INI?\n\n- Stok bahan ini di gudang akan otomatis DIKURANGI.\n- Uang Kas akan DIKEMBALIKAN (Jika statusnya lunas).')) {
+  if(await window.$dialog.confirm('HAPUS PERMANEN NOTA INI?\n\n- Stok bahan ini di gudang akan otomatis DIKURANGI.\n- Uang Kas akan DIKEMBALIKAN (Jika statusnya lunas).')) {
     const token = localStorage.getItem('inventory_token')
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${id}`, {
@@ -91,13 +91,13 @@ const hapusPembelian = async (id) => {
       })
       
       if(res.ok) {
-        alert('Nota pembelian berhasil dihapus & stok disesuaikan!')
+        window.$dialog.alert('Nota pembelian berhasil dihapus & stok disesuaikan!')
         fetchBelanja() // Refresh data otomatis
       } else {
-        alert('Gagal menghapus data pembelian.')
+        window.$dialog.alert('Gagal menghapus data pembelian.')
       }
     } catch (err) {
-      alert('Error server.')
+      window.$dialog.alert('Error server.')
     }
   }
 }

@@ -83,8 +83,8 @@ const onBahanChange = () => {
 }
 
 const simpanOpname = async () => {
-  if(!form.value.bahan_id) return alert('Pilih bahan!')
-  if(!confirm(`Catat penyesuaian fisik gudang? Stok di sistem akan ditimpa dengan angka ini.`)) return
+  if(!form.value.bahan_id) return window.$dialog.alert('Pilih bahan!')
+  if(!await window.$dialog.confirm(`Catat penyesuaian fisik gudang? Stok di sistem akan ditimpa dengan angka ini.`)) return
 
   const token = localStorage.getItem('inventory_token')
   const res = await fetch(`${import.meta.env.VITE_API_URL}/api/opname`, {
@@ -94,7 +94,7 @@ const simpanOpname = async () => {
   })
 
   if(res.ok) {
-    alert("Opname berhasil! Stok bahan telah disesuaikan.")
+    window.$dialog.alert("Opname berhasil! Stok bahan telah disesuaikan.")
     form.value = { bahan_id: '', stok_fisik: 0, keterangan: '' }
     bahanTerpilih.value = null
     searchQuery.value = ''

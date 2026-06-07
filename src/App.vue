@@ -6,6 +6,7 @@ import {
   ArrowRightLeft, ChefHat, Moon, Scissors, Scale, 
   Receipt, Trash2, LogOut
 } from 'lucide-vue-next'
+import GlobalDialog from './components/GlobalDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,8 +25,8 @@ watch(() => route.path, () => {
 })
 
 // Fungsi membuang token dan keluar
-const logout = () => {
-  if (confirm('Yakin ingin mengunci sistem dan keluar?')) {
+const logout = async () => {
+  if (await window.$dialog.confirm('Yakin ingin mengunci sistem dan keluar?')) {
     localStorage.removeItem('inventory_token')
     localStorage.removeItem('admin_role')
     router.push('/login')
@@ -34,6 +35,7 @@ const logout = () => {
 </script>
 
 <template>
+  <GlobalDialog />
   <div class="h-screen w-full bg-slate-50 flex font-sans selection:bg-blue-200 overflow-hidden">
     
     <!-- Sidebar -->

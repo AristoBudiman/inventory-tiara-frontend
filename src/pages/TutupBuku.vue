@@ -26,11 +26,11 @@ const fetchJurnal = async () => {
 }
 
 const eksekusiTutupBuku = async () => {
-  if(!confirm(`Eksekusi Tutup Buku untuk tanggal ${filterTanggal.value}? Pastikan semua transaksi hari ini selesai.`)) return
+  if(!await window.$dialog.confirm(`Eksekusi Tutup Buku untuk tanggal ${filterTanggal.value}? Pastikan semua transaksi hari ini selesai.`)) return
   isCalculating.value = true
   const token = localStorage.getItem('inventory_token')
   const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produksi/tutup-buku`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tanggal: filterTanggal.value }) })
-  if (res.ok) { alert("Tutup Buku Berhasil!"); fetchJurnal() } else { alert("Gagal kalkulasi.") }
+  if (res.ok) { window.$dialog.alert("Tutup Buku Berhasil!"); fetchJurnal() } else { window.$dialog.alert("Gagal kalkulasi.") }
   isCalculating.value = false
 }
 onMounted(fetchJurnal)

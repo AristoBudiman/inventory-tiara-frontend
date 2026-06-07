@@ -20,9 +20,9 @@ const getFilteredBahan = (query) => {
 }
 
 const simpanResep = async () => {
-  if (formResep.value.bahan_detail.length === 0) return alert('Resep minimal butuh 1 bahan!')
+  if (formResep.value.bahan_detail.length === 0) return window.$dialog.alert('Resep minimal butuh 1 bahan!')
   const invalid = formResep.value.bahan_detail.find(b => !b.bahan_id || b.kebutuhan <= 0)
-  if(invalid) return alert('Pastikan semua baris bahan dipilih dan gramasinya valid!')
+  if(invalid) return window.$dialog.alert('Pastikan semua baris bahan dipilih dan gramasinya valid!')
 
   const method = isEdit.value ? 'PUT' : 'POST'
   const url = isEdit.value ? `${import.meta.env.VITE_API_URL}/api/resep/${formResep.value.ID}` : `${import.meta.env.VITE_API_URL}/api/resep`
@@ -44,12 +44,12 @@ const simpanResep = async () => {
     
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      return alert('Gagal menyimpan resep: ' + (err.message || res.statusText))
+      return window.$dialog.alert('Gagal menyimpan resep: ' + (err.message || res.statusText))
     }
 
     resetForm(); fetchResep()
   } catch (error) {
-    alert('Terjadi kesalahan jaringan: ' + error.message)
+    window.$dialog.alert('Terjadi kesalahan jaringan: ' + error.message)
   }
 }
 
@@ -64,7 +64,7 @@ const editResep = (r) => {
   showModalResep.value = true
 }
 
-const hapusResep = async (id) => { if(confirm('Buang resep ini?')) { await fetch(`${import.meta.env.VITE_API_URL}/api/resep/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` } }); fetchResep() } }
+const hapusResep = async (id) => { if(await window.$dialog.confirm('Buang resep ini?')) { await fetch(`${import.meta.env.VITE_API_URL}/api/resep/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('inventory_token')}` } }); fetchResep() } }
 const resetForm = () => { isEdit.value = false; showModalResep.value = false; formResep.value = { ID: null, nama_resep: '', target_gramasi: 0, bahan_detail: [{ bahan_id: '', kebutuhan: 0, _search: '', _isOpen: false }] } }
 
 onMounted(() => { fetchBahan(); fetchResep() })

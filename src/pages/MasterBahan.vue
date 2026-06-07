@@ -62,7 +62,7 @@ const editBahan = (b) => {
 }
 
 const hapusBahan = async (id) => {
-  if(confirm('Hapus bahan ini ke tempat sampah?')) {
+  if(await window.$dialog.confirm('Hapus bahan ini ke tempat sampah?')) {
     const token = localStorage.getItem('inventory_token')
     await fetch(`${import.meta.env.VITE_API_URL}/api/bahan/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
     fetchBahan()
@@ -122,7 +122,7 @@ const bukaModalBeli = (b = null) => {
 
 const tambahKeKeranjang = () => {
   if (!tempBeli.value.bahan_id || !tempBeli.value.qty || !tempBeli.value.subtotal) {
-    return alert('Harap isi Bahan, Qty, dan Subtotal Biaya!')
+    return window.$dialog.alert('Harap isi Bahan, Qty, dan Subtotal Biaya!')
   }
   const bahan = listBahan.value.find(x => x.ID === tempBeli.value.bahan_id)
   
@@ -164,7 +164,7 @@ const grandTotalBelanja = computed(() => {
 })
 
 const simpanPembelian = async () => {
-  if (formBeli.value.details.length === 0) return alert('Keranjang belanja masih kosong!')
+  if (formBeli.value.details.length === 0) return window.$dialog.alert('Keranjang belanja masih kosong!')
   
   const payload = {
     tanggal: formBeli.value.tanggal,
@@ -181,11 +181,11 @@ const simpanPembelian = async () => {
   })
   
   if (res.ok) { 
-    alert('Struk belanja gabungan berhasil dicatat! Stok terupdate.')
+    window.$dialog.alert('Struk belanja gabungan berhasil dicatat! Stok terupdate.')
     showModalBeli.value = false
     fetchBahan() 
   } else {
-    alert('Gagal mencatat belanja ke database.')
+    window.$dialog.alert('Gagal mencatat belanja ke database.')
   }
 }
 // ==========================================
@@ -207,7 +207,7 @@ const bukaModalSatuan = (b) => {
 }
 
 const tambahSatuan = async () => {
-  if (!formSatuan.value.nama_satuan || !formSatuan.value.nilai_konversi) return alert("Harap lengkapi data satuan!")
+  if (!formSatuan.value.nama_satuan || !formSatuan.value.nilai_konversi) return window.$dialog.alert("Harap lengkapi data satuan!")
   const payload = {
     bahan_id: bahanAktif.value.ID,
     nama_satuan: formSatuan.value.nama_satuan,
@@ -226,12 +226,12 @@ const tambahSatuan = async () => {
       bahanAktif.value = listBahan.value.find(b => b.ID === bahanAktif.value.ID)
     })
   } else {
-    alert("Gagal menambah satuan")
+    window.$dialog.alert("Gagal menambah satuan")
   }
 }
 
 const hapusSatuan = async (id) => {
-  if (confirm("Hapus konversi satuan ini?")) {
+  if (await window.$dialog.confirm("Hapus konversi satuan ini?")) {
     const token = localStorage.getItem('inventory_token')
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/satuan/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
     if (res.ok) {
@@ -256,9 +256,9 @@ const bukaModalOpname = (b) => {
 }
 
 const simpanOpnameCepat = async () => {
-  if (formOpname.value.stok_fisik === null || formOpname.value.stok_fisik === '') return alert("Stok fisik harus diisi!")
-  if (formOpname.value.stok_fisik < 0) return alert("Stok fisik tidak boleh negatif!")
-  if (!confirm(`Sesuaikan stok ${formOpname.value.nama_bahan} menjadi ${formOpname.value.stok_fisik} ${formOpname.value.satuan}?`)) return
+  if (formOpname.value.stok_fisik === null || formOpname.value.stok_fisik === '') return window.$dialog.alert("Stok fisik harus diisi!")
+  if (formOpname.value.stok_fisik < 0) return window.$dialog.alert("Stok fisik tidak boleh negatif!")
+  if (!await window.$dialog.confirm(`Sesuaikan stok ${formOpname.value.nama_bahan} menjadi ${formOpname.value.stok_fisik} ${formOpname.value.satuan}?`)) return
   
   const token = localStorage.getItem('inventory_token')
   
@@ -275,11 +275,11 @@ const simpanOpnameCepat = async () => {
   })
   
   if (res.ok) {
-    alert("Stok berhasil disesuaikan dan tercatat di riwayat Opname!")
+    window.$dialog.alert("Stok berhasil disesuaikan dan tercatat di riwayat Opname!")
     showModalOpname.value = false
     fetchBahan()
   } else {
-    alert("Gagal memperbarui stok!")
+    window.$dialog.alert("Gagal memperbarui stok!")
   }
 }
 
