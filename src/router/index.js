@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Login from '../pages/Login.vue'
+import DashboardInventory from '../pages/DashboardInventory.vue'
 import MasterBahan from '../pages/MasterBahan.vue'
 import MasterResep from '../pages/MasterResep.vue'
 import MasterKomposit from '../pages/MasterKomposit.vue'
@@ -14,8 +15,9 @@ import TutupBuku from '../pages/TutupBuku.vue'
 import PecahBarang from '../pages/PecahBarang.vue'
 
 const routes = [
-  { path: '/', redirect: '/bahan' }, 
+  { path: '/', redirect: '/dashboard' }, 
   { path: '/login', component: Login },
+  { path: '/dashboard', component: DashboardInventory },
   { path: '/bahan', component: MasterBahan },
   { path: '/resep', component: MasterResep },
   { path: '/komposit', component: MasterKomposit },
@@ -45,7 +47,7 @@ router.beforeEach((to, from) => {
 
   // 2. Jika sudah punya token tapi iseng buka halaman /login, tendang ke dalam
   if (to.path === '/login' && isTokenValid) {
-    return '/bahan'
+    return '/dashboard'
   }
 
   // 3. Sisanya, biarkan lewat

@@ -54,14 +54,14 @@ const logout = async () => {
             </button>
 
             <!-- Brand Text -->
-            <div v-if="!isSidebarMinimized" class="whitespace-nowrap overflow-hidden transition-all duration-300 opacity-100 flex flex-col justify-center">
+            <router-link to="/dashboard" v-if="!isSidebarMinimized" class="whitespace-nowrap overflow-hidden transition-all duration-300 opacity-100 flex flex-col justify-center hover:opacity-80">
                 <h1 class="font-black text-lg tracking-[0.2em] text-white leading-tight">
                     TIARA
                 </h1>
                 <p class="text-[10px] font-black tracking-[0.3em] text-transparent bg-clip-text bg-linear-to-r from-yellow-400 to-yellow-200 uppercase">
                     Inventory
                 </p>
-            </div>
+            </router-link>
 
             <!-- Close button for mobile -->
             <button @click="isMenuOpen = false" class="md:hidden ml-auto text-slate-400 hover:text-white p-2">
@@ -166,7 +166,9 @@ const logout = async () => {
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto w-full relative">
-            <router-view />
+            <div class="p-4 md:p-8 w-full max-w-7xl mx-auto">
+              <router-view />
+            </div>
         </main>
     </div>
 
