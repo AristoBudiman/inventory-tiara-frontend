@@ -192,7 +192,7 @@ onMounted(() => {
                   <td class="px-6 py-4 font-bold text-slate-700">{{ b.nama_bahan }}</td>
                   <td class="px-6 py-4 text-center">
                     <span :class="b.stok <= 0 ? 'bg-rose-50 text-rose-600 border-rose-200/50' : 'bg-orange-50 text-orange-600 border-orange-200/50'" class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border">
-                      {{ b.stok <= 0 ? 'Habis (0)' : `${b.stok} ${b.satuan}` }}
+                      {{ b.stok <= 0 ? `Habis (${b.stok})` : `${b.stok} ${b.satuan}` }}
                     </span>
                   </td>
                 </tr>
