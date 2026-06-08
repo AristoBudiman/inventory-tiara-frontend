@@ -124,8 +124,8 @@ onMounted(fetchMasterData)
       </button>
     </div>
 
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <table class="w-full text-left text-sm">
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+      <table class="w-full text-left text-sm min-w-[600px] md:min-w-full">
         <thead class="bg-gray-100 border-b border-gray-200 text-gray-600 uppercase tracking-wider text-[10px] font-black">
           <tr>
             <th class="p-4">Nama Komposit</th>
