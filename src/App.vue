@@ -4,8 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { 
   Menu, X, Crown, Package, Soup, Layers, ShoppingBag, 
   ArrowRightLeft, ChefHat, Moon, Scissors, Scale, 
-  Receipt, Trash2, LogOut, UserCog
+  Receipt, Trash2, LogOut, UserCog, ClipboardCheck, SplitSquareHorizontal, ScrollText
 } from 'lucide-vue-next'
+import { hasPermission } from './utils/permission'
 import GlobalDialog from './components/GlobalDialog.vue'
 
 const route = useRoute()
@@ -120,22 +121,22 @@ const saveProfile = async () => {
             <div class="space-y-1.5">
                 <span v-if="!isSidebarMinimized" class="text-[10px] font-black text-slate-500 uppercase tracking-wider px-3 mb-2 block whitespace-nowrap overflow-hidden">Master Data</span>
                 
-                <router-link to="/bahan" title="Master Bahan" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_master_bahan')" to="/bahan" title="Master Bahan" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
                     <Package :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Bahan</span>
                 </router-link>
                 
-                <router-link to="/resep" title="Buku Resep" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_resep')" to="/resep" title="Buku Resep" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
                     <Soup :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Resep</span>
                 </router-link>
                 
-                <router-link to="/komposit" title="Bahan Komposit" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_komposit')" to="/komposit" title="Bahan Komposit" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
                     <Layers :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Komposit</span>
                 </router-link>
                 
-                <router-link to="/barang" title="Master Produk" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_master_barang')" to="/barang" title="Master Produk" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-blue-600 !text-white shadow-md">
                     <ShoppingBag :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Produk</span>
                 </router-link>
@@ -144,17 +145,17 @@ const saveProfile = async () => {
             <div class="space-y-1.5">
                 <span v-if="!isSidebarMinimized" class="text-[10px] font-black text-slate-500 uppercase tracking-wider px-3 mb-2 block whitespace-nowrap overflow-hidden">Operasional Dapur</span>
                 
-                <router-link to="/konversi" title="Konversi Kemasan" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_produksi_masak')" to="/konversi" title="Konversi Kemasan" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
                     <ArrowRightLeft :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Konversi</span>
                 </router-link>
                 
-                <router-link to="/input-produksi" title="Input Produksi Dapur" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
+                <router-link v-if="hasPermission(['manage_produksi_masak', 'manage_produksi_matang', 'manage_barang_rusak'])" to="/input-produksi" title="Input Produksi Dapur" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
                     <ChefHat :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Dapur</span>
                 </router-link>
                 
-                <router-link to="/tutup-buku" title="Tutup Buku Harian" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_tutup_buku')" to="/tutup-buku" title="Tutup Buku Harian" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-yellow-600 !text-white shadow-md">
                     <Moon :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Tutup Buku</span>
                 </router-link>
@@ -163,22 +164,21 @@ const saveProfile = async () => {
             <div class="space-y-1.5">
                 <span v-if="!isSidebarMinimized" class="text-[10px] font-black text-slate-500 uppercase tracking-wider px-3 mb-2 block whitespace-nowrap overflow-hidden">Gudang & Laporan</span>
                 
-                <router-link to="/pecah-barang" title="Pecah Barang" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
-                    <Scissors :size="20" class="shrink-0" />
+                <router-link v-if="hasPermission('manage_pecah_barang')" to="/pecah-barang" title="Pecah Barang" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
+                    <SplitSquareHorizontal :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Pecah Brg</span>
                 </router-link>
                 
-                <router-link to="/opname" title="Stok Opname" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_stok_opname')" to="/opname" title="Stok Opname" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
                     <Scale :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Opname</span>
                 </router-link>
-                
-                <router-link to="/laporan-pengeluaran" title="Laporan Pengeluaran Gudang" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('view_jurnal_dapur')" to="/laporan-pengeluaran" title="Laporan Pengeluaran Gudang" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
                     <Receipt :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Pengeluaran</span>
                 </router-link>
                 
-                <router-link to="/sampah-inventory" title="Tempat Sampah" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
+                <router-link v-if="hasPermission('manage_sampah')" to="/sampah-inventory" title="Tempat Sampah" class="py-2.5 rounded-xl text-sm font-bold flex items-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" :class="isSidebarMinimized ? 'justify-center px-0' : 'px-3 gap-3'" exact-active-class="!bg-rose-600 !text-white shadow-md">
                     <Trash2 :size="20" class="shrink-0" />
                     <span v-if="!isSidebarMinimized" class="whitespace-nowrap">Sampah</span>
                 </router-link>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { ChefHat, Flame, ShoppingCart, Croissant, Trash2 } from 'lucide-vue-next'
+import { hasPermission } from '../utils/permission'
 
 const getToday = () => new Date().toISOString().split('T')[0]
 
@@ -183,7 +184,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
       
       <!-- KIRI: PANEL MASAK (ORANGE) -->
-      <div class="bg-white rounded-2xl shadow-md border border-orange-100 flex flex-col overflow-hidden">
+      <div v-if="hasPermission('manage_produksi_masak')" class="bg-white rounded-2xl shadow-md border border-orange-100 flex flex-col overflow-hidden">
         <div class="bg-orange-500 p-5 text-white flex items-center gap-3">
           <Flame :size="28" />
           <div>
@@ -251,7 +252,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
       </div>
 
       <!-- TENGAH: PANEL MATANG (HIJAU) -->
-      <div class="bg-white rounded-2xl shadow-md border border-emerald-100 flex flex-col overflow-hidden">
+      <div v-if="hasPermission('manage_produksi_matang')" class="bg-white rounded-2xl shadow-md border border-emerald-100 flex flex-col overflow-hidden">
         <div class="bg-emerald-600 p-5 text-white flex items-center gap-3">
           <Croissant :size="28" />
           <div>
@@ -297,7 +298,7 @@ onMounted(() => { fetchMasterData(); fetchRiwayat() })
       </div>
 
       <!-- KANAN: PANEL RUSAK/AFKIR (MERAH) -->
-      <div class="bg-white rounded-2xl shadow-md border border-red-100 flex flex-col overflow-hidden">
+      <div v-if="hasPermission('manage_barang_rusak')" class="bg-white rounded-2xl shadow-md border border-red-100 flex flex-col overflow-hidden">
         <div class="bg-red-600 p-5 text-white flex items-center gap-3">
           <Trash2 :size="28" />
           <div>

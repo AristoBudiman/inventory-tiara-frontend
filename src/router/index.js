@@ -14,21 +14,23 @@ import StockOpname from '../pages/StockOpname.vue'
 import TutupBuku from '../pages/TutupBuku.vue'
 import PecahBarang from '../pages/PecahBarang.vue'
 
+import { hasPermission } from '../utils/permission'
+
 const routes = [
   { path: '/', redirect: '/dashboard' }, 
   { path: '/login', component: Login },
-  { path: '/dashboard', component: DashboardInventory },
-  { path: '/bahan', component: MasterBahan },
-  { path: '/resep', component: MasterResep },
-  { path: '/komposit', component: MasterKomposit },
-  { path: '/barang', component: MasterBarang },
-  { path: '/input-produksi', component: InputProduksi },
-  { path: '/laporan-pengeluaran', component: LaporanPengeluaran },
-  { path: '/konversi', component: KonversiPagi },
-  { path: '/opname', component: StockOpname },
-  { path: '/tutup-buku', component: TutupBuku },
-  { path: '/pecah-barang', component: PecahBarang },
-  { path: '/sampah-inventory', component: SampahInventory },
+  { path: '/dashboard', component: DashboardInventory, meta: { requiresAuth: true, requiredPermission: 'app_inventory' } },
+  { path: '/bahan', component: MasterBahan, meta: { requiresAuth: true, requiredPermission: 'manage_master_bahan' } },
+  { path: '/resep', component: MasterResep, meta: { requiresAuth: true, requiredPermission: 'manage_resep' } },
+  { path: '/komposit', component: MasterKomposit, meta: { requiresAuth: true, requiredPermission: 'manage_komposit' } },
+  { path: '/barang', component: MasterBarang, meta: { requiresAuth: true, requiredPermission: 'manage_master_barang' } },
+  { path: '/input-produksi', component: InputProduksi, meta: { requiresAuth: true, requiredPermission: ['manage_produksi_masak', 'manage_produksi_matang', 'manage_barang_rusak'] } },
+  { path: '/laporan-pengeluaran', component: LaporanPengeluaran, meta: { requiresAuth: true, requiredPermission: 'view_jurnal_dapur' } },
+  { path: '/konversi', component: KonversiPagi, meta: { requiresAuth: true, requiredPermission: 'manage_produksi_masak' } },
+  { path: '/opname', component: StockOpname, meta: { requiresAuth: true, requiredPermission: 'manage_opname' } },
+  { path: '/tutup-buku', component: TutupBuku, meta: { requiresAuth: true, requiredPermission: 'manage_tutup_buku' } },
+  { path: '/pecah-barang', component: PecahBarang, meta: { requiresAuth: true, requiredPermission: 'manage_pecah_barang' } },
+  { path: '/sampah-inventory', component: SampahInventory, meta: { requiresAuth: true, requiredPermission: 'manage_sampah' } },
 ]
 
 const router = createRouter({
@@ -40,14 +42,23 @@ router.beforeEach((to, from) => {
   const token = localStorage.getItem('inventory_token')
   const isTokenValid = token && token !== 'null' && token !== 'undefined' && token.trim() !== ''
 
-  // 1. Jika belum login (token kosong), lempar ke halaman login
-  if (to.path !== '/login' && !isTokenValid) {
-    return '/login'
-  }
+  if (to.meta.requiresAuth) {
+    if (!isTokenValid) {
+      return '/login'
+    }
 
-  // 2. Jika sudah punya token tapi iseng buka halaman /login, tendang ke dalam
-  if (to.path === '/login' && isTokenValid) {
-    return '/dashboard'
+    const required = to.meta.requiredPermission
+    const hasAccess = required ? hasPermission(required) : true
+
+    if (!hasAccess) {
+      window.$dialog?.alert(`Akses Ditolak! Anda tidak diizinkan melihat halaman ini.`)
+      return '/login'
+    }
+  } else {
+    // Kalau sudah login mau ke halaman login, kembalikan ke dashboard
+    if (isTokenValid && to.path === '/login') {
+      if (hasPermission('app_inventory')) return '/dashboard'
+    }
   }
 
   // 3. Sisanya, biarkan lewat

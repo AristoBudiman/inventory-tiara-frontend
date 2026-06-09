@@ -27,10 +27,18 @@ const handleLogin = async () => {
     const data = await res.json()
 
     if (res.ok) {
-      // Menggunakan key inventory_token sesuai aslinya
-      localStorage.setItem('inventory_token', data.token)
-      localStorage.setItem('admin_role', data.role)
-      router.push('/') 
+      // Izinkan login jika Superadmin ATAU memiliki izin app_inventory
+      const isSuperadmin = data.role === 'Superadmin' || data.role === 'superadmin'
+      const hasAppInventory = data.permissions && data.permissions.includes('app_inventory')
+
+      if (isSuperadmin || hasAppInventory) {
+        localStorage.setItem('inventory_token', data.token)
+        localStorage.setItem('admin_role', data.role)
+        localStorage.setItem('inventory_permissions', JSON.stringify(data.permissions || []))
+        router.push('/') 
+      } else {
+        errorMsg.value = "Akses Ditolak! Anda tidak memiliki izin ke Sistem Inventory."
+      }
     } else {
       errorMsg.value = data.error || 'Username atau Password salah!'
     }
