@@ -12,6 +12,15 @@ const getToday = () => {
     return new Date(today - offset).toISOString().split('T')[0]
 }
 
+const today = new Date()
+const offset = today.getTimezoneOffset() * 60000
+const localTodayStr = new Date(today - offset).toISOString().split('T')[0]
+const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+const localFirstDayStr = new Date(firstDay - offset).toISOString().split('T')[0]
+
+const startHistoryDate = ref(localFirstDayStr)
+const endHistoryDate = ref(localTodayStr)
+
 const form = ref({
   tanggal: getToday(),
   bahan_asal_id: '',
@@ -26,9 +35,14 @@ const fetchAwal = async () => {
     const token = localStorage.getItem('inventory_token')
     const headers = { 'Authorization': `Bearer ${token}` }
     
+    let historyUrl = `${import.meta.env.VITE_API_URL}/api/inventory/pecah-barang`
+    if (startHistoryDate.value && endHistoryDate.value) {
+      historyUrl += `?start_date=${startHistoryDate.value}&end_date=${endHistoryDate.value}`
+    }
+
     const [resBahan, resRiwayat] = await Promise.all([
       fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers }),
-      fetch(`${import.meta.env.VITE_API_URL}/api/inventory/pecah-barang`, { headers })
+      fetch(historyUrl, { headers })
     ])
 
     if(resBahan.ok) listBahan.value = await resBahan.json()
@@ -199,9 +213,13 @@ onMounted(fetchAwal)
 
     <!-- RIWAYAT -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-5 bg-gray-50 border-b flex justify-between items-center">
+        <div class="p-5 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-4">
           <h3 class="font-black text-gray-700 tracking-tight uppercase text-xs">Riwayat Konversi Barang</h3>
-          <button @click="fetchAwal" class="text-xs bg-white border px-3 py-1 rounded shadow-sm hover:bg-gray-100 font-bold text-gray-600">Refresh</button>
+          <div class="flex items-center gap-2">
+            <input type="date" v-model="startHistoryDate" @change="fetchAwal" class="text-xs border-gray-300 rounded p-1.5 focus:ring-indigo-500">
+            <span class="text-gray-400 font-bold">-</span>
+            <input type="date" v-model="endHistoryDate" @change="fetchAwal" class="text-xs border-gray-300 rounded p-1.5 focus:ring-indigo-500">
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left">
