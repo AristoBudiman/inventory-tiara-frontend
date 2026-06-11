@@ -25,10 +25,11 @@ const fetchDashboardData = async () => {
     const token = localStorage.getItem('inventory_token') || localStorage.getItem('admin_token')
     const headers = { 'Authorization': `Bearer ${token}` }
     
+    const firstDayStr = `${monthStr}-01`
     const [resBahan, resBarang, resBeli] = await Promise.all([
       fetch(`${import.meta.env.VITE_API_URL}/api/bahan`, { headers }),
       fetch(`${import.meta.env.VITE_API_URL}/api/barangs`, { headers }),
-      fetch(`${import.meta.env.VITE_API_URL}/api/pembelian`, { headers })
+      fetch(`${import.meta.env.VITE_API_URL}/api/pembelian?start=${firstDayStr}&end=${todayStr}`, { headers })
     ])
     
     if (resBahan.ok) {
