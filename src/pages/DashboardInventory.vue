@@ -15,8 +15,9 @@ const bahanKritis = ref([])
 const recentPembelian = ref([])
 const isFetching = ref(false)
 
-const getLocalDateString = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
-const todayStr = getLocalDateString(new Date())
+import { getWIBDateString } from '../utils/date'
+
+const todayStr = getWIBDateString()
 const monthStr = todayStr.substring(0, 7)
 
 const fetchDashboardData = async () => {

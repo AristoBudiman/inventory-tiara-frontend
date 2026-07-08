@@ -6,23 +6,18 @@ const isLoading = ref(false)
 const riwayat = ref([])
 const listBahan = ref([])
 
-const getToday = () => {
-    const today = new Date()
-    const offset = today.getTimezoneOffset() * 60000
-    return new Date(today - offset).toISOString().split('T')[0]
-}
+import { getWIBDateString } from '../utils/date'
 
 const today = new Date()
-const offset = today.getTimezoneOffset() * 60000
-const localTodayStr = new Date(today - offset).toISOString().split('T')[0]
+const localTodayStr = getWIBDateString(today)
 const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-const localFirstDayStr = new Date(firstDay - offset).toISOString().split('T')[0]
+const localFirstDayStr = getWIBDateString(firstDay)
 
 const startHistoryDate = ref(localFirstDayStr)
 const endHistoryDate = ref(localTodayStr)
 
 const form = ref({
-  tanggal: getToday(),
+  tanggal: getWIBDateString(),
   bahan_asal_id: '',
   qty_asal: 1,
   keterangan: 'Pecah Barang',

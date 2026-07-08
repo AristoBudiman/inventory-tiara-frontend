@@ -2,8 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { Moon, Settings, TrendingDown, Scale, Package, Truck } from 'lucide-vue-next'
 
-const getToday = () => new Date().toISOString().split('T')[0]
-const filterTanggal = ref(getToday())
+import { getWIBDateString } from '../utils/date'
+
+const filterTanggal = ref(getWIBDateString())
 
 const jurnalEfisiensi = ref([])
 const sisaLayakJual = ref([])

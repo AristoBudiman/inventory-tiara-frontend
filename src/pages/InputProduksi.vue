@@ -2,10 +2,9 @@
 import { ref, onMounted, watch } from 'vue'
 import { ChefHat, Flame, ShoppingCart, Croissant, Trash2 } from 'lucide-vue-next'
 import { hasPermission } from '../utils/permission'
+import { getWIBDateString } from '../utils/date'
 
-const getToday = () => new Date().toISOString().split('T')[0]
-
-const filterTanggal = ref(getToday())
+const filterTanggal = ref(getWIBDateString())
 const listResep = ref([])
 const listBarang = ref([])
 const riwayatMasak = ref([])
