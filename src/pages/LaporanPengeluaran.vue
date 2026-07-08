@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Receipt, ClipboardList, Trash2, Calendar, Flag, Inbox, Sparkles, Coins } from 'lucide-vue-next'
+import { Receipt, ClipboardList, Trash2, Calendar, Flag, Inbox, Sparkles, Coins, X } from 'lucide-vue-next'
 
 const today = new Date()
 const year = today.getFullYear()
@@ -18,6 +18,10 @@ const isFetching = ref(false)
 
 // 1. STATE BARU: Saklar mode tampilan
 const viewMode = ref('aktif') 
+
+const showLunasModal = ref(false)
+const notaToLunas = ref(null)
+const tanggalLunas = ref(defaultEnd)
 
 const fetchBelanja = async () => {
   isFetching.value = true
@@ -59,25 +63,42 @@ const formatTanggal = (tgl) => new Date(tgl).toLocaleDateString('id-ID', { day: 
 const grandTotal = computed(() => listBelanja.value.reduce((sum, item) => sum + item.total_biaya, 0))
 
 const toggleStatusBayar = async (b) => {
-  const isCurrentlyLunas = b.is_lunas;
-  const actionText = isCurrentlyLunas 
-    ? 'Membatalkan lunas (mengubah jadi HUTANG)? Uang akan ditarik kembali ke Kas.' 
-    : 'Melunasi hutang ini? Kas akan otomatis terpotong.';
-    
-  if(await window.$dialog.confirm(`Yakin ingin ${actionText}`)) {
-    const token = localStorage.getItem('inventory_token')
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${b.ID}/status`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify({ is_lunas: !isCurrentlyLunas }) // Kirim status kebalikannya
-    })
-    
-    if(res.ok) {
-      fetchBelanja() // Refresh data
+  if (b.is_lunas) {
+    if (await window.$dialog.confirm('Membatalkan lunas (mengubah jadi HUTANG)? Uang akan ditarik kembali ke Kas.')) {
+      eksekusiStatusBayar(b, false, null)
     }
+  } else {
+    notaToLunas.value = b
+    tanggalLunas.value = defaultEnd
+    showLunasModal.value = true
+  }
+}
+
+const eksekusiStatusBayar = async (b, targetLunas, tglLunas) => {
+  const token = localStorage.getItem('inventory_token')
+  const payload = { is_lunas: targetLunas }
+  if (targetLunas && tglLunas) {
+    payload.tanggal_lunas = tglLunas
+  }
+  
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pembelian/${b.ID}/status`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    },
+    body: JSON.stringify(payload)
+  })
+  
+  if(res.ok) {
+    showLunasModal.value = false
+    fetchBelanja() 
+  }
+}
+
+const konfirmasiLunas = () => {
+  if (notaToLunas.value) {
+    eksekusiStatusBayar(notaToLunas.value, true, tanggalLunas.value)
   }
 }
 
@@ -279,6 +300,29 @@ onMounted(fetchBelanja)
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- MODAL PELUNASAN -->
+  <div v-if="showLunasModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all">
+      <div class="bg-slate-800 px-5 py-4 flex justify-between items-center">
+        <h3 class="font-black text-white text-lg tracking-wide">Pilih Tanggal Lunas</h3>
+        <button @click="showLunasModal = false" class="text-slate-400 hover:text-white transition-colors">
+          <X :size="20" />
+        </button>
+      </div>
+      <div class="p-5">
+        <p class="text-sm text-slate-600 mb-4">Kas akan otomatis terpotong pada tanggal yang Anda pilih.</p>
+        <div class="mb-5">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal Lunas</label>
+          <input type="date" v-model="tanggalLunas" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-50" />
+        </div>
+        <div class="flex gap-3">
+          <button @click="showLunasModal = false" class="flex-1 py-2.5 font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Batal</button>
+          <button @click="konfirmasiLunas" class="flex-1 py-2.5 font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md shadow-emerald-200 transition-colors">Tandai Lunas</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
