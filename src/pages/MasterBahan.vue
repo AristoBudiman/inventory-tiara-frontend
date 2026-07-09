@@ -327,6 +327,7 @@ onMounted(fetchBahan)
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs whitespace-nowrap">Nama Bahan</th>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-48 whitespace-nowrap">Stok Gudang</th>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right whitespace-nowrap">HPP Terakhir</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right whitespace-nowrap">Subtotal</th>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64 whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
@@ -358,6 +359,10 @@ onMounted(fetchBahan)
               <td class="p-4 text-right whitespace-nowrap">
                 <span class="font-bold text-gray-800 text-base">Rp {{ formatRp(element.harga_saat_ini) }}</span>
                 <span class="text-[10px] text-gray-500 font-medium ml-1">/ {{ element.satuan }}</span>
+              </td>
+
+              <td class="p-4 text-right whitespace-nowrap">
+                <span class="font-black text-green-700 text-base">Rp {{ formatRp(element.stok * element.harga_saat_ini) }}</span>
               </td>
 
               <td class="p-4 whitespace-nowrap">
