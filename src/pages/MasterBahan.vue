@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import draggable from 'vuedraggable'
-import { Package, ShoppingCart, Plus, GripVertical, AlertTriangle, Pencil, Sparkles, Scale, Ruler } from 'lucide-vue-next'
+import { Package, ShoppingCart, Plus, GripVertical, AlertTriangle, Pencil, Sparkles, Scale, Ruler, Printer } from 'lucide-vue-next'
 
 const listBahan = ref([])
 const isEdit = ref(false)
@@ -45,6 +45,10 @@ const simpanBahan = async () => {
   isEdit.value = false
   formBahan.value = { ID: null, nama_bahan: '', satuan: 'gr', batas_minimum: 0, harga_saat_ini: 0 }
   fetchBahan()
+}
+
+const printListBahan = () => {
+  window.print()
 }
 
 // BUKA POP-UP TAMBAH BAHAN BARU
@@ -310,7 +314,10 @@ onMounted(fetchBahan)
         </h1>
         <p class="text-sm text-gray-500 font-medium mt-1">Kelola data mentah, stok gudang, dan HPP otomatis.</p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 print:hidden">
+        <button @click="printListBahan" class="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
+          <Printer :size="20" /> Print
+        </button>
         <button @click="bukaModalBeli()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
           <ShoppingCart :size="20" /> Catat Struk Belanja
         </button>
@@ -328,7 +335,7 @@ onMounted(fetchBahan)
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-48 whitespace-nowrap">Stok Gudang</th>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right whitespace-nowrap">HPP Terakhir</th>
             <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-right whitespace-nowrap">Subtotal</th>
-            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64 whitespace-nowrap">Aksi</th>
+            <th class="p-4 font-black text-gray-600 uppercase tracking-wider text-xs text-center w-64 whitespace-nowrap print:hidden">Aksi</th>
           </tr>
         </thead>
         <draggable 
@@ -344,7 +351,7 @@ onMounted(fetchBahan)
             <tr class="hover:bg-blue-50/50 transition-colors bg-white">
               
               <td class="p-4 font-bold text-gray-800 text-base whitespace-nowrap flex items-center gap-2">
-                <GripVertical :size="20" class="text-gray-400 drag-handle cursor-grab active:cursor-grabbing" title="Tahan dan geser" />
+                <GripVertical :size="20" class="text-gray-400 drag-handle cursor-grab active:cursor-grabbing print:hidden" title="Tahan dan geser" />
                 {{ element.nama_bahan }}
               </td>
 
@@ -365,7 +372,7 @@ onMounted(fetchBahan)
                 <span class="font-black text-green-700 text-base">Rp {{ formatRp(element.stok * element.harga_saat_ini) }}</span>
               </td>
 
-              <td class="p-4 whitespace-nowrap">
+              <td class="p-4 whitespace-nowrap print:hidden">
                 <div class="flex justify-center gap-2">
                   <button @click="bukaModalSatuan(element)" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded font-bold text-xs transition-colors" title="Atur Satuan">Satuan</button>
                   <button @click="bukaModalOpname(element)" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded font-bold text-xs transition-colors" title="Opname Cepat">Opname</button>

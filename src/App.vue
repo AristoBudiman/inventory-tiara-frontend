@@ -92,7 +92,7 @@ const saveProfile = async () => {
              isMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
              isSidebarMinimized ? 'md:w-20' : 'md:w-64'
            ]"
-           class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transition-all duration-300 ease-in-out flex flex-col md:static shadow-xl overflow-hidden shrink-0">
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transition-all duration-300 ease-in-out flex flex-col md:static shadow-xl overflow-hidden shrink-0 print:hidden">
         
         <div class="h-16 flex items-center px-4 border-b border-slate-800 shrink-0 transition-all duration-300" :class="isSidebarMinimized ? 'justify-center' : 'gap-3'">
             
@@ -213,7 +213,7 @@ const saveProfile = async () => {
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative transition-all duration-300">
         
         <!-- Mobile Top Header (only visible on mobile) -->
-        <header v-if="!isLoginPage" class="md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 shadow-sm shrink-0 sticky top-0 z-30">
+        <header v-if="!isLoginPage" class="md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 shadow-sm shrink-0 sticky top-0 z-30 print:hidden">
             <div class="flex items-center gap-3">
                 <button @click="isMenuOpen = true" class="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
                     <Menu :size="24" />
