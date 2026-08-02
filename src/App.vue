@@ -84,7 +84,7 @@ const saveProfile = async () => {
 
 <template>
   <GlobalDialog />
-  <div class="h-screen w-full bg-slate-50 flex font-sans selection:bg-blue-200 overflow-hidden">
+  <div class="h-screen w-full bg-slate-50 flex font-sans selection:bg-blue-200 overflow-hidden print:h-auto print:overflow-visible print:block">
     
     <!-- Sidebar -->
     <aside v-if="!isLoginPage" 
@@ -210,7 +210,7 @@ const saveProfile = async () => {
     <!-- Overlay for mobile when sidebar is open -->
     <div v-if="!isLoginPage && isMenuOpen" @click="isMenuOpen = false" class="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity"></div>
 
-    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative transition-all duration-300">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative transition-all duration-300 print:h-auto print:overflow-visible print:block">
         
         <!-- Mobile Top Header (only visible on mobile) -->
         <header v-if="!isLoginPage" class="md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 shadow-sm shrink-0 sticky top-0 z-30 print:hidden">
@@ -226,7 +226,7 @@ const saveProfile = async () => {
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto w-full relative">
+        <main class="flex-1 overflow-y-auto w-full relative print:overflow-visible print:h-auto print:block">
             <div class="p-4 md:p-8 w-full max-w-7xl mx-auto">
               <router-view />
             </div>

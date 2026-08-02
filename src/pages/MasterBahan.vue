@@ -327,7 +327,7 @@ onMounted(fetchBahan)
       </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto print:overflow-visible print:border-none print:shadow-none print:m-0 print:p-0">
       <table class="w-full min-w-max text-sm text-left">
         <thead class="bg-gray-100 border-b-2 border-gray-200">
           <tr>
